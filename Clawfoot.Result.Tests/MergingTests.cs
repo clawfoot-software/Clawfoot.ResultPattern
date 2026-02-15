@@ -7,69 +7,64 @@ public class MergingTests
 {
     private const string ERROR_MESSAGE = "Error";
     private const int TEST_VALUE = 5;
-    private const int TEST_VALUE2 = 55;
-    
+
     [Fact]
-    public void ResultT_WithResult_Merges()
+    public void Combine_ResultT_With_Result_ReturnsNewResultWithCombinedErrors()
     {
         Result<int> result = new Result<int>(TEST_VALUE);
-        Result resultObj = new Result();
-        
-        resultObj.AddError(ERROR_MESSAGE);
-        
-        Result<int>? merged = result.MergeResults(resultObj);
-        
-        merged.ShouldBe(result);
-        result.Success.ShouldBeFalse();
-        result.Value.ShouldBe(TEST_VALUE);
-        result.Errors.Count().ShouldBe(1);
-        result.Errors.First().Message.ShouldBe(ERROR_MESSAGE);
-    }
-    
-    [Fact]
-    public void ResultT_WithResultT_Merges()
-    {
-        Result<int> result = new Result<int>(TEST_VALUE);
-        Result<int> result2 = new Result<int>();
-        
-        result2.AddError(ERROR_MESSAGE);
-        
-        Result<int>? merged = result.MergeResults(result2);
-        
-        merged.ShouldBe(result);
-        result.Success.ShouldBeFalse();
-        result.Value.ShouldBe(TEST_VALUE);
-        result.Errors.Count().ShouldBe(1);
-        result.Errors.First().Message.ShouldBe(ERROR_MESSAGE);
-    }
-    
-    [Fact]
-    public void Result_WithResultT_Merges()
-    {
-        Result result = new Result();
-        Result<int> resultObj = new Result<int>();
-        
-        result.AddError(ERROR_MESSAGE);
-        
-        Result merged = result.MergeResults(resultObj);
-        
-        merged.ShouldBe(result);
-        result.Success.ShouldBeFalse();
-        result.Errors.Count().ShouldBe(1);
-        result.Errors.First().Message.ShouldBe(ERROR_MESSAGE);
+        Result resultObj = Result.Error(ERROR_MESSAGE);
+
+        Result<int> merged = Result.Combine<int>(resultObj, result);
+
+        merged.ShouldNotBe(result);
+        result.Success.ShouldBeTrue();
+        result.Errors.ShouldBeEmpty();
+        merged.Success.ShouldBeFalse();
+        merged.Value.ShouldBe(TEST_VALUE);
+        merged.Errors.Count().ShouldBe(1);
+        merged.Errors.First().Message.ShouldBe(ERROR_MESSAGE);
     }
 
     [Fact]
-    public void Regression_GenericResult_MergeInNonGeneric_ShouldNeverCallAsT()
+    public void Combine_ResultT_With_ResultT_ReturnsNewResultWithCombinedErrors()
     {
-        // Regression test to ensure that we are avoiding implicit casts instead of direct implementation calls
-        // The implicit Result -> Result<T> cast calls .As<T>() and was causing a stack overflow
-        
+        Result<int> result = new Result<int>(TEST_VALUE);
+        Result<int> result2 = Result.Error<int>(ERROR_MESSAGE);
+
+        Result<int> merged = Result.Combine(result, result2);
+
+        merged.ShouldNotBe(result);
+        result.Success.ShouldBeTrue();
+        result.Errors.ShouldBeEmpty();
+        merged.Success.ShouldBeFalse();
+        merged.Value.ShouldBe(TEST_VALUE);
+        merged.Errors.Count().ShouldBe(1);
+        merged.Errors.First().Message.ShouldBe(ERROR_MESSAGE);
+    }
+
+    [Fact]
+    public void Combine_Result_With_ResultT_ReturnsNewResultWithCombinedErrors()
+    {
+        Result result = Result.Error(ERROR_MESSAGE);
+        Result<int> resultObj = new Result<int>();
+
+        Result merged = Result.Combine(new ResultBase[] { result, resultObj });
+
+        merged.ShouldNotBe(result);
+        result.Success.ShouldBeFalse();
+        merged.Success.ShouldBeFalse();
+        merged.Errors.Count().ShouldBe(1);
+        merged.Errors.First().Message.ShouldBe(ERROR_MESSAGE);
+    }
+
+    [Fact]
+    public void Combine_ResultBaseArray_CombinesWithoutCallingAsT()
+    {
         Result<int> result = new Result<int>();
         Result result2 = A.Fake<Result>();
-        
-        result.MergeResults(result2);
-        
+
+        Result merged = Result.Combine(new ResultBase[] { result, result2 });
+
         A.CallTo(() => result2.As<int>()).MustNotHaveHappened();
     }
 }

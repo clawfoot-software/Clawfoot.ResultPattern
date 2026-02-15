@@ -18,15 +18,15 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <inheritdoc/>
-        public int Code { get; set; }
+        public int Code { get; private set; }
         /// <inheritdoc/>
-        public string GroupName { get; set; }
+        public string GroupName { get; private set; }
         /// <inheritdoc/>
-        public string Message { get; set; }
+        public string Message { get; private set; }
         /// <inheritdoc/>
-        public string UserMessage { get; set; }
+        public string UserMessage { get; private set; }
         /// <inheritdoc/>
-        public string MemberName { get; set; }
+        public string MemberName { get; private set; }
 
         /// <inheritdoc/>
         public override string ToString()

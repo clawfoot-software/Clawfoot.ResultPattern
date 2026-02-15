@@ -1,176 +1,113 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Clawfoot.ResultPattern
 {
     /// <summary>
-    /// A generic version of a result
+    /// A generic version of a result (immutable)
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     public class Result<T> : AbstractResult<Result<T>>
     {
-        private T _result;
+        private readonly T _value;
 
-
-        public Result() { }
+        public Result() { _value = default; }
 
         /// <summary>
-        /// Creates a <see cref="Result{T}"/> with the result and success message
+        /// Creates a result with the value and optional success message
         /// </summary>
-        /// <param name="result"></param>
-        /// <param name="successMessage"></param>
-        public Result(T result, string successMessage = null)
+        public Result(T value, string successMessage = null)
             : base(successMessage)
         {
-            _result = result;
+            _value = value;
         }
 
         /// <summary>
-        /// The returned value
+        /// Creates a result with initial errors and/or exceptions (no value)
         /// </summary>
-        public T Value
+        public Result(
+            IEnumerable<IError> errors,
+            IEnumerable<Exception> exceptions = null,
+            string successMessage = null)
+            : base(errors, exceptions, successMessage)
         {
-            get => _result;
-            set => _result = value;
+            _value = default;
         }
 
         /// <summary>
-        /// If this result has a result.
-        /// Returns false if there are errors, even if a result has been set
+        /// Creates a result with initial errors, exceptions, success message, and value
+        /// </summary>
+        public Result(
+            IEnumerable<IError> errors,
+            IEnumerable<Exception> exceptions,
+            string successMessage,
+            T value)
+            : base(errors, exceptions, successMessage)
+        {
+            _value = value;
+        }
+
+        /// <summary>
+        /// The returned value (read-only)
+        /// </summary>
+        public T Value => _value;
+
+        /// <summary>
+        /// If this result has a value (non-default). Returns false if there are errors.
         /// </summary>
         public bool HasResult
         {
             get
             {
-                if (EqualityComparer<T>.Default.Equals(_result, default(T))) return false;
-
-                return true;
+                if (HasErrors) return false;
+                return !EqualityComparer<T>.Default.Equals(_value, default);
             }
         }
 
         /// <summary>
-        /// Sets the result of the result
+        /// Returns a new result with the same errors/exceptions/success message but the given value
         /// </summary>
-        /// <param name="result"></param>
-        public Result<T> SetResult(T result)
+        public Result<T> WithValue(T value)
         {
-            Value = result;
-            return this;
+            return new Result<T>(_errors, _exceptions, _successMessage, value);
         }
 
-        public Result<T> MergeResults(Result result)
+        protected override Result<T> CreateWith(
+            IReadOnlyList<IError> errors,
+            IReadOnlyList<Exception> exceptions,
+            string successMessage)
         {
-            return base.MergeResults<Result<T>, Result>(result);
+            return new Result<T>(errors, exceptions, successMessage);
         }
 
         /// <summary>
-        /// Will combine the result, errors, and exceptions of the provided result with this result.
-        /// If the provided result has a different success message, and no errors, replaces this results success message with the provided result.
-        /// Will prioritize keeping the result that exists. If this result doesn't have a result, and the provided result does, will keep the provided result.
-        /// If both results have a result, this will prioritize the current results result over the provided result.
-        /// Returns this result
+        /// Converts this result to one with the provided value type (same errors/exceptions)
         /// </summary>
-        /// <param name="result">The result to merge into this result</param>
-        /// <returns>This result</returns>
-        public Result<T> MergeResults(Result<T> result)
+        public Result<TResult> To<TResult>(TResult value)
         {
-            base.MergeResults(result);
-
-            // If this doesn't have a result, and result does, keep the provided result
-            // This also implicitly means that an existing result on this result is maintained either way
-            if (!HasResult && result.HasResult)
-            {
-                SetResult(result.Value);
-            }
-
-            return this;
+            return new Result<TResult>(_errors, _exceptions, _successMessage, value);
         }
 
-        /// <summary>
-        /// Will combine the errors, exceptions, and result of this result into the provided result using <see cref="MergeResults(Result{T})"/>.
-        /// Returns the provided result
-        /// </summary>
-        /// <param name="result">The result to merge into</param>
-        /// <returns>The provided result</returns>
-        public Result<T> MergeIntoResult(Result<T> result)
-        {
-            return result.MergeResults(this);
-        }
-
-        /// <summary>
-        /// Will combine the errors and exceptions of this result into the provided result using <see cref="Result.MergeResults(Result)"/>.
-        /// Returns the result of this result
-        /// </summary>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public T MergeIntoResultAndReturnResult(Result result)
-        {
-            result.MergeResults((ResultBase)this);
-            return this.Value;
-        }
-
-        /// <summary>
-        /// Will combine the errors, exceptions, and result of this result into the provided result using <see cref="MergeResults(Result{T})"/>.
-        /// Returns the result of this result
-        /// </summary>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public T MergeIntoResultAndReturnResult(Result<T> result)
-        {
-            result.MergeResults(this);
-            return this.Value;
-        }
-
-        /// <summary>
-        /// Converts this generic result to one with the provided result type
-        /// Used by the MapTo extension method
-        /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="result"></param>
-        public Result<TResult> To<TResult>(TResult result)
-        {
-            Result<TResult> resultObj = new Result<TResult>();
-            resultObj.SetResult(result);
-
-            resultObj.MergeResults(this);
-            return resultObj;
-
-        }
-        
         public static implicit operator Result<T>(T value)
         {
             return new Result<T>(value);
         }
-        
+
         public static implicit operator Result(Result<T> generic)
         {
-            return (Result)new Result().MergeResults(generic);
+            return new Result(generic);
         }
-        
+
         public static implicit operator Result<T>(Result value)
         {
-            return value.As<T>();
+            return value?.As<T>();
         }
-        
-        /// <summary>
-        /// Deconstructs the result into its parts
-        /// </summary>
-        /// <param name="result"></param>
-        /// <param name="resultValue"></param>
+
         public void Deconstruct(out Result result, out T resultValue)
         {
             result = this;
             resultValue = Value;
         }
-        
-        /// <summary>
-        ///  Deconstructs the result into its parts
-        /// </summary>
-        /// <param name="result"></param>
-        /// <param name="resultValue"></param>
-        /// <param name="success"></param>
+
         public void Deconstruct(out Result result, out T resultValue, out bool success)
         {
             result = this;
@@ -179,5 +116,3 @@ namespace Clawfoot.ResultPattern
         }
     }
 }
-
-

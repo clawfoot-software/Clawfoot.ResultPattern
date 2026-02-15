@@ -74,9 +74,7 @@ namespace Clawfoot.ResultPattern
         public static Result Invoke(Func<Result> func, bool keepException = false)
         {
             Result result = new Result();
-            result.Invoke(func, keepException);
-
-            return result;
+            return result.Invoke(func, keepException);
         }
 
         /// <summary>
@@ -89,9 +87,7 @@ namespace Clawfoot.ResultPattern
             bool keepException = false)
         {
             Result result = new Result();
-            await result.InvokeAsync(func, keepException);
-
-            return result;
+            return await result.InvokeAsync(func, keepException);
         }
 
         /// <summary>
@@ -111,14 +107,7 @@ namespace Clawfoot.ResultPattern
             }
             catch (Exception ex)
             {
-                if (!keepException)
-                {
-                    return Result.Error<TResult>(ex.Message);
-                }
-
-                Result<TResult> resultObj = new Result<TResult>();
-                resultObj.AddException(ex);
-                return resultObj;
+                return Result.Error<TResult>(ex);
             }
         }
 
@@ -139,14 +128,7 @@ namespace Clawfoot.ResultPattern
             }
             catch (Exception ex)
             {
-                if (!keepException)
-                {
-                    return Result.Error<TResult>(ex.Message);
-                }
-
-                Result<TResult> resultObj = new Result<TResult>();
-                resultObj.AddException(ex);
-                return resultObj;
+                return Result.Error<TResult>(ex);
             }
         }
 
@@ -166,14 +148,7 @@ namespace Clawfoot.ResultPattern
             }
             catch (Exception ex)
             {
-                if (!keepException)
-                {
-                    return Result.Error<TResult>(ex.Message);
-                }
-
-                Result<TResult> resultObj = new Result<TResult>();
-                resultObj.AddException(ex);
-                return resultObj;
+                return Result.Error<TResult>(ex);
             }
         }
     }

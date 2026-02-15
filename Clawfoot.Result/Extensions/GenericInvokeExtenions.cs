@@ -6,130 +6,67 @@ namespace Clawfoot.ResultPattern
     public static class GenericInvokeExtenions
     {
         /// <summary>
-        /// Invokes the delegate, and if it throws an exception, records it in the current result and returns null.
-        /// If success, sets the result value, and returns the result of the delegate
+        /// Invokes the delegate; on success returns a new result with the value. On exception returns a new result with the error.
         /// </summary>
-        /// <param name="func"></param>
-        /// <param name="keepException"></param>
-        /// <returns></returns>
-        public static T InvokeResult<T>(this Result<T> result, Func<T> func, bool keepException = false)
+        public static Result<T> InvokeResult<T>(this Result<T> result, Func<T> func, bool keepException = false)
         {
             try
             {
-                T resultValue = func.Invoke();
-                result.SetResult(resultValue);
-                return resultValue;
+                T value = func.Invoke();
+                return result.WithValue(value);
             }
             catch (Exception ex)
             {
-                if (!keepException)
-                {
-                    result.AddError(ex.Message);
-                }
-                else
-                {
-                    result.AddException(ex);
-                }
+                return keepException ? (Result<T>)result.WithException(ex) : (Result<T>)result.WithError(ex.Message);
             }
-
-            return default(T);
         }
-        
+
         /// <summary>
-        /// Invokes the delegate, and if it throws an exception, records it in the current result and returns null.
-        /// If success, unwraps the nested result, sets the result value, and returns the result of the delegate
+        /// Invokes the delegate that returns Result&lt;T&gt;; returns a new result combining this and the invoked result (last value wins).
         /// </summary>
-        /// <param name="func"></param>
-        /// <param name="keepException"></param>
-        /// <returns></returns>
-        public static T InvokeResult<T>(this Result<T> result, Func<Result<T>> func, bool keepException = false)
+        public static Result<T> InvokeResult<T>(this Result<T> result, Func<Result<T>> func, bool keepException = false)
         {
             try
             {
                 Result<T> invokedResult = func.Invoke();
-                result.MergeResults(invokedResult);
-                result.SetResult(invokedResult.Value);
-                
-                return invokedResult.Value;
+                return Result.Combine(result, invokedResult);
             }
             catch (Exception ex)
             {
-                if (!keepException)
-                {
-                    result.AddError(ex.Message);
-                }
-                else
-                {
-                    result.AddException(ex);
-                }
+                return keepException ? (Result<T>)result.WithException(ex) : (Result<T>)result.WithError(ex.Message);
             }
-        
-            return default(T);
         }
-        
 
         /// <summary>
-        /// Invokes the delegate, and if it throws an exception, records it in the current result and returns null.
-        /// If success, sets the result value, and returns the result of the delegate
+        /// Invokes the delegate; on success returns a new result with the value. On exception returns a new result with the error.
         /// </summary>
-        /// <param name="func"></param>
-        /// <param name="keepException"></param>
-        /// <returns></returns>
-        public static async Task<T> InvokeResultAsync<T>(this Result<T> result, Func<Task<T>> func,
-            bool keepException = false)
+        public static async Task<Result<T>> InvokeResultAsync<T>(this Result<T> result, Func<Task<T>> func, bool keepException = false)
         {
             try
             {
-                T resultValue = await func.Invoke();
-                result.SetResult(resultValue);
-                return resultValue;
+                T value = await func.Invoke();
+                return result.WithValue(value);
             }
             catch (Exception ex)
             {
-                if (!keepException)
-                {
-                    result.AddError(ex.Message);
-                }
-                else
-                {
-                    result.AddException(ex);
-                }
+                return keepException ? (Result<T>)result.WithException(ex) : (Result<T>)result.WithError(ex.Message);
             }
-
-            return default(T);
         }
-        
+
         /// <summary>
-        /// Invokes the delegate, and if it throws an exception, records it in the current result and returns null.
-        /// If success, unwraps the nested result, sets the result value, and returns the result of the delegate
+        /// Invokes the delegate that returns Result&lt;T&gt;; returns a new result combining this and the invoked result (last value wins).
         /// </summary>
-        /// <param name="func"></param>
-        /// <param name="keepException"></param>
-        /// <returns></returns>
-        public static async Task<T> InvokeResultAsync<T>(this Result<T> result, Func<Task<Result<T>>> func,
-            bool keepException = false)
+        public static async Task<Result<T>> InvokeResultAsync<T>(this Result<T> result, Func<Task<Result<T>>> func, bool keepException = false)
         {
             try
             {
                 Result<T> invokedResult = await func.Invoke();
-                result.MergeResults(invokedResult);
-                result.SetResult(invokedResult.Value);
-                
-                return invokedResult.Value;
+                return Result.Combine(result, invokedResult);
             }
             catch (Exception ex)
             {
-                if (!keepException)
-                {
-                    result.AddError(ex.Message);
-                }
-                else
-                {
-                    result.AddException(ex);
-                }
+                return keepException ? (Result<T>)result.WithException(ex) : (Result<T>)result.WithError(ex.Message);
             }
-
-            return default(T);
         }
     }
 }
