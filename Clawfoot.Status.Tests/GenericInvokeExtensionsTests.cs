@@ -1,69 +1,69 @@
 using Shouldly;
 
-namespace Clawfoot.Status.Tests;
+namespace Clawfoot.Result.Tests;
 
 // Largely testing for build errors around ambiguous methods
 public class GenericInvokeExtensionsTests
 {
     private const int TEST_VALUE = 5;
 
-    private static Status<int> DoThingStatus()
+    private static Result<int> DoThingResult()
     {
         return TEST_VALUE;
     }
     
-    private static Status<int> DoThingIStatus()
+    private static Result<int> DoThingIResult()
     {
-        return Status.Ok(TEST_VALUE);
+        return Result.Ok(TEST_VALUE);
     }
     
     [Fact]
-    public void Status_WithStatus_Ensure_NoAmbiguousInvoke()
+    public void Result_WithResult_Ensure_NoAmbiguousInvoke()
     {
-        Status<int> status = new Status<int>();
+        Result<int> result = new Result<int>();
         
-        int result = status.InvokeResult(() => DoThingStatus());
+        int resultValue = result.InvokeResult(() => DoThingResult());
         
-        result.ShouldBe(TEST_VALUE);
+        resultValue.ShouldBe(TEST_VALUE);
     }
     
     [Fact]
-    public void IStatus_WithStatus_Ensure_NoAmbiguousInvoke()
+    public void IResult_WithResult_Ensure_NoAmbiguousInvoke()
     {
-        Status<int> status = new Status<int>();
+        Result<int> result = new Result<int>();
         
-        int result = status.InvokeResult(() => DoThingIStatus());
+        int resultValue = result.InvokeResult(() => DoThingIResult());
         
-        result.ShouldBe(TEST_VALUE);
+        resultValue.ShouldBe(TEST_VALUE);
     }
 
     [Fact]
-    public void StatusT_Do()
+    public void ResultT_Do()
     {
-        var status = new Status<int>();
+        var result = new Result<int>();
         
-        (Status s, int result) = status.Do(() => DoThingIStatus());
+        (Result r, int resultValue) = result.Do(() => DoThingIResult());
     }
     
     [Fact]
-    public void Status_Do()
+    public void Result_Do()
     {
-        var status = new Status();
+        var result = new Result();
         
-        Status s = status.Do(() => DoThingIStatus());
+        Result r = result.Do(() => DoThingIResult());
     }
 
     [Fact]
-    public async Task InvokeResultAsync_WithReturningTaskStatusResult_ReturnsStatusResult()
+    public async Task InvokeResultAsync_WithReturningTaskResultResult_ReturnsResultResult()
     {
-        async Task<Status<int>> DoThingStatusAsync()
+        async Task<Result<int>> DoThingResultAsync()
         {
             return TEST_VALUE;
         }
         
-        (Status status, int result) = await Status.InvokeResultAsync(async () => await DoThingStatusAsync());
+        (Result result, int resultValue) = await Result.InvokeResultAsync(async () => await DoThingResultAsync());
         
-        result.ShouldBe(TEST_VALUE);
-        status.HasErrors.ShouldBeFalse();
+        resultValue.ShouldBe(TEST_VALUE);
+        result.HasErrors.ShouldBeFalse();
     }
 }

@@ -1,30 +1,30 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Clawfoot.Status
+namespace Clawfoot.Result
 {
     public static class InvokeExtensions
     {
-        private static void HandleInvokeException<TStatus>(TStatus status, Exception ex, bool keepException)
-            where TStatus: AbstractStatus<TStatus>
+        private static void HandleInvokeException<TResultType>(TResultType result, Exception ex, bool keepException)
+            where TResultType: AbstractResult<TResultType>
         {
             if (!keepException)
             {
-                status.AddError(ex.Message);
+                result.AddError(ex.Message);
             }
             else
             {
-                status.AddException(ex);
+                result.AddException(ex);
             }
         }
         
 
         /// <summary>
-        /// Invokes the delegate, and if it throws an exception, records it in the current status.
-        /// Returns this status
+        /// Invokes the delegate, and if it throws an exception, records it in the current result.
+        /// Returns this result
         /// </summary>
-        public static TStatus Invoke<TStatus>(this TStatus status, Action action, bool keepException = false)
-            where TStatus: AbstractStatus<TStatus>
+        public static TResultType Invoke<TResultType>(this TResultType result, Action action, bool keepException = false)
+            where TResultType: AbstractResult<TResultType>
         {
             try
             {
@@ -32,32 +32,32 @@ namespace Clawfoot.Status
             }
             catch (Exception ex)
             {
-                HandleInvokeException(status, ex, keepException);
+                HandleInvokeException(result, ex, keepException);
             }
 
-            return status;
+            return result;
         }
 
         /// <summary>
-        /// Invokes the delegate, and if it throws an exception, records it in the current status.
-        /// Returns this status
+        /// Invokes the delegate, and if it throws an exception, records it in the current result.
+        /// Returns this result
         /// </summary>
-        public static TStatus Do<TStatus>(this TStatus status, Action action, bool keepException = false)
-            where TStatus: AbstractStatus<TStatus>
+        public static TResultType Do<TResultType>(this TResultType result, Action action, bool keepException = false)
+            where TResultType: AbstractResult<TResultType>
         {
-            return Invoke(status, action, keepException);
+            return Invoke(result, action, keepException);
         }
             
 
         /// <summary>
-        /// Invokes the delegate, and if it throws an exception, records it in the current status.
-        /// Returns this status
+        /// Invokes the delegate, and if it throws an exception, records it in the current result.
+        /// Returns this result
         /// </summary>
         /// <param name="action"></param>
         /// <param name="keepException"></param>
         /// <returns></returns>
-        public static async Task<TStatus> InvokeAsync<TStatus>(this TStatus status, Func<Task> action, bool keepException = false)
-            where TStatus: AbstractStatus<TStatus>
+        public static async Task<TResultType> InvokeAsync<TResultType>(this TResultType result, Func<Task> action, bool keepException = false)
+            where TResultType: AbstractResult<TResultType>
         {
             try
             {
@@ -65,18 +65,18 @@ namespace Clawfoot.Status
             }
             catch (Exception ex)
             {
-                HandleInvokeException(status, ex, keepException);
+                HandleInvokeException(result, ex, keepException);
             }
 
-            return status;
+            return result;
         }
 
         /// <summary>
-        /// Invokes the delegate, and if it throws an exception, records it in the current status.
-        /// Returns this status
+        /// Invokes the delegate, and if it throws an exception, records it in the current result.
+        /// Returns this result
         /// </summary>
-        public static TStatus Invoke<TParam, TStatus>(this TStatus status, Action<TParam> action, TParam obj, bool keepException = false)
-            where TStatus: AbstractStatus<TStatus>
+        public static TResultType Invoke<TParam, TResultType>(this TResultType result, Action<TParam> action, TParam obj, bool keepException = false)
+            where TResultType: AbstractResult<TResultType>
         {
             try
             {
@@ -84,34 +84,34 @@ namespace Clawfoot.Status
             }
             catch (Exception ex)
             {
-                HandleInvokeException(status, ex, keepException);
+                HandleInvokeException(result, ex, keepException);
             }
 
-            return status;
+            return result;
         }
 
         /// <summary>
-        /// Invokes the delegate, and if it throws an exception, records it in the current status.
-        /// Returns this status
+        /// Invokes the delegate, and if it throws an exception, records it in the current result.
+        /// Returns this result
         /// </summary>
-        public static TStatus Do<TParam, TStatus>(this TStatus status, Action<TParam> action, TParam obj, bool keepException = false)
-            where TStatus: AbstractStatus<TStatus>
+        public static TResultType Do<TParam, TResultType>(this TResultType result, Action<TParam> action, TParam obj, bool keepException = false)
+            where TResultType: AbstractResult<TResultType>
         {
-            return Invoke(status, action, obj, keepException);
+            return Invoke(result, action, obj, keepException);
         }
         
         /// <summary>
-        /// Invokes the delegate, and if it throws an exception, records it in the current status.
-        /// Returns this status
+        /// Invokes the delegate, and if it throws an exception, records it in the current result.
+        /// Returns this result
         /// </summary>
         /// <param name="action"></param>
         /// <param name="keepException"></param>
         /// <returns></returns>
-        public static async Task<TStatus> InvokeAsync<TParam, TStatus>(this TStatus status,
+        public static async Task<TResultType> InvokeAsync<TParam, TResultType>(this TResultType result,
             Func<TParam, Task> action,
             TParam obj,
             bool keepException = false)
-            where TStatus: AbstractStatus<TStatus>
+            where TResultType: AbstractResult<TResultType>
         {
             try
             {
@@ -119,165 +119,165 @@ namespace Clawfoot.Status
             }
             catch (Exception ex)
             {
-                HandleInvokeException(status, ex, keepException);
+                HandleInvokeException(result, ex, keepException);
             }
 
-            return status;
+            return result;
         }
 
         /// <summary>
-        /// Invokes the delegate that returns an <see cref="Status"/>, and merges that result status into this status
-        /// If an exception occurs, records that exception in this status.
-        /// Returns this status
+        /// Invokes the delegate that returns an <see cref="Result"/>, and merges that result into this result
+        /// If an exception occurs, records that exception in this result.
+        /// Returns this result
         /// </summary>
-        public static TStatus Invoke<TStatus>(this TStatus status, Func<Status> func, bool keepException = false)
-            where TStatus: AbstractStatus<TStatus>
+        public static TResultType Invoke<TResultType>(this TResultType result, Func<Result> func, bool keepException = false)
+            where TResultType: AbstractResult<TResultType>
         {
             try
             {
-                Status resultStatus = func.Invoke();
-                resultStatus.MergeIntoStatus(status);
+                Result invokedResult = func.Invoke();
+                invokedResult.MergeIntoResult(result);
             }
             catch (Exception ex)
             {
-                HandleInvokeException(status, ex, keepException);
+                HandleInvokeException(result, ex, keepException);
             }
 
-            return status;
+            return result;
         }
 
         /// <summary>
-        /// Invokes the delegate that returns an <see cref="Status"/>, and merges that result status into this status
-        /// If an exception occurs, records that exception in this status.
-        /// Returns this status
+        /// Invokes the delegate that returns an <see cref="Result"/>, and merges that result into this result
+        /// If an exception occurs, records that exception in this result.
+        /// Returns this result
         /// </summary>
-        public static TStatus Do<TStatus>(this TStatus status, Func<Status> func, bool keepException = false)
-            where TStatus: AbstractStatus<TStatus>
+        public static TResultType Do<TResultType>(this TResultType result, Func<Result> func, bool keepException = false)
+            where TResultType: AbstractResult<TResultType>
         {
-            return Invoke(status, func, keepException);
+            return Invoke(result, func, keepException);
         }
         
         /// <summary>
-        /// Invokes the delegate that returns an <see cref="Status"/>, and merges that result status into this status
-        /// If an exception occurs, records that exception in this status.
-        /// Returns this status
+        /// Invokes the delegate that returns an <see cref="Result"/>, and merges that result into this result
+        /// If an exception occurs, records that exception in this result.
+        /// Returns this result
         /// </summary>
         /// <param name="func"></param>
         /// <param name="keepException"></param>
         /// <returns></returns>
-        public static async Task<TStatus> InvokeAsync<TStatus>(this TStatus status, Func<Task<Status>> func, bool keepException = false)
-            where TStatus: AbstractStatus<TStatus>
+        public static async Task<TResultType> InvokeAsync<TResultType>(this TResultType result, Func<Task<Result>> func, bool keepException = false)
+            where TResultType: AbstractResult<TResultType>
         {
             try
             {
-                Status resultStatus = await func.Invoke();
-                resultStatus.MergeIntoStatus(status);
+                Result invokedResult = await func.Invoke();
+                invokedResult.MergeIntoResult(result);
             }
             catch (Exception ex)
             {
-                HandleInvokeException(status, ex, keepException);
+                HandleInvokeException(result, ex, keepException);
             }
 
-            return status;
+            return result;
         }
 
         /// <summary>
-        /// Invokes the delegate that returns an <see cref="Status{T}"/>, merges that result status into this status, and returns the TResult result
-        /// If an exception occurs, records that exception in this status and returns default(TResult).
-        /// Returns this status
+        /// Invokes the delegate that returns an <see cref="Result{T}"/>, merges that result into this result, and returns the TResult result
+        /// If an exception occurs, records that exception in this result and returns default(TResult).
+        /// Returns this result
         /// </summary>
         /// <param name="func"></param>
         /// <param name="keepException"></param>
         /// <returns></returns>
-        public static TResult InvokeResult<TResult, TStatus>(this TStatus status, Func<Status<TResult>> func, bool keepException = false)
-            where TStatus: AbstractStatus<TStatus>
+        public static TResult InvokeResult<TResult, TResultType>(this TResultType result, Func<Result<TResult>> func, bool keepException = false)
+            where TResultType: AbstractResult<TResultType>
         {
             try
             {
-                Status<TResult> resultStatus = func.Invoke();
-                resultStatus.MergeIntoStatus(status); //Merge errors into this
-                return resultStatus.Result;
+                Result<TResult> invokedResult = func.Invoke();
+                invokedResult.MergeIntoResult(result); //Merge errors into this
+                return invokedResult.Value;
             }
             catch (Exception ex)
             {
-                HandleInvokeException(status, ex, keepException);
+                HandleInvokeException(result, ex, keepException);
             }
 
             return default(TResult);
         }
 
         /// <summary>
-        /// Invokes the delegate that returns an <see cref="Status{T}"/>, merges that result status into this status, and returns the TResult result
-        /// If an exception occurs, records that exception in this status and returns default(TResult).
-        /// Returns this status
+        /// Invokes the delegate that returns an <see cref="Result{T}"/>, merges that result into this result, and returns the TResult result
+        /// If an exception occurs, records that exception in this result and returns default(TResult).
+        /// Returns this result
         /// </summary>
         /// <param name="func"></param>
         /// <param name="keepException"></param>
         /// <returns></returns>
-        public static async Task<TResult> InvokeResultAsync<TResult, TStatus>(this TStatus status,
-            Func<Task<Status<TResult>>> func,
+        public static async Task<TResult> InvokeResultAsync<TResult, TResultType>(this TResultType result,
+            Func<Task<Result<TResult>>> func,
             bool keepException = false)
-            where TStatus: AbstractStatus<TStatus>
+            where TResultType: AbstractResult<TResultType>
         {
             try
             {
-                Status<TResult> resultStatus = await func.Invoke();
-                resultStatus.MergeIntoStatus(status); //Merge errors into this
-                return resultStatus.Result;
+                Result<TResult> invokedResult = await func.Invoke();
+                invokedResult.MergeIntoResult(result); //Merge errors into this
+                return invokedResult.Value;
             }
             catch (Exception ex)
             {
-                HandleInvokeException(status, ex, keepException);
+                HandleInvokeException(result, ex, keepException);
             }
 
             return default(TResult);
         }
 
         /// <summary>
-        /// Invokes the delegate, and if it throws an exception, records it in the current status and returns default(TResult).
+        /// Invokes the delegate, and if it throws an exception, records it in the current result and returns default(TResult).
         /// If success, return the result of the delegate
         /// </summary>
         /// <typeparam name="TResult">The output type</typeparam>
         /// <param name="func">The delegate</param>
-        /// <param name="keepException">To keep the exception in the status, or just record the error message</param>
+        /// <param name="keepException">To keep the exception in the result, or just record the error message</param>
         /// <returns></returns>
-        public static TResult InvokeResult<TResult, TStatus>(this TStatus status, Func<TResult> func, bool keepException = false)
-            where TStatus: AbstractStatus<TStatus>
+        public static TResult InvokeResult<TResult, TResultType>(this TResultType result, Func<TResult> func, bool keepException = false)
+            where TResultType: AbstractResult<TResultType>
         {
             try
             {
-                TResult result = func.Invoke();
-                return result;
+                TResult resultValue = func.Invoke();
+                return resultValue;
             }
             catch (Exception ex)
             {
-                HandleInvokeException(status, ex, keepException);
+                HandleInvokeException(result, ex, keepException);
             }
 
             return default(TResult);
         }
 
         /// <summary>
-        /// Invokes the delegate, and if it throws an exception, records it in the current status and returns default(TResult).
+        /// Invokes the delegate, and if it throws an exception, records it in the current result and returns default(TResult).
         /// If success, return the result of the delegate
         /// </summary>
         /// <typeparam name="TResult">The output type</typeparam>
         /// <param name="func">The delegate</param>
-        /// <param name="keepException">To keep the exception in the status, or just record the error message</param>
+        /// <param name="keepException">To keep the exception in the result, or just record the error message</param>
         /// <returns></returns>
-        public static async Task<TResult> InvokeResultAsync<TResult, TStatus>(this TStatus status,
+        public static async Task<TResult> InvokeResultAsync<TResult, TResultType>(this TResultType result,
             Func<Task<TResult>> func,
             bool keepException = false)
-            where TStatus: AbstractStatus<TStatus>
+            where TResultType: AbstractResult<TResultType>
         {
             try
             {
-                TResult result = await func.Invoke();
-                return result;
+                TResult resultValue = await func.Invoke();
+                return resultValue;
             }
             catch (Exception ex)
             {
-                HandleInvokeException(status, ex, keepException);
+                HandleInvokeException(result, ex, keepException);
             }
 
             return default(TResult);

@@ -1,9 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Clawfoot.Status
+namespace Clawfoot.Result
 {
+    /// <summary>
+    /// Interface for a generic error
+    /// </summary>
     public interface IError
     {
         /// <summary>

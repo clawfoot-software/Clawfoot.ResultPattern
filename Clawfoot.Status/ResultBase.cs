@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Clawfoot.Status
+namespace Clawfoot.Result
 {
-    public abstract class StatusBase
+    public abstract class ResultBase
     {
         protected internal const string DEFAULT_SUCCESS_MESSAGE = "Success";
         private protected readonly List<IError> _errors = new List<IError>();
@@ -12,15 +12,15 @@ namespace Clawfoot.Status
         private protected string _successMessage = DEFAULT_SUCCESS_MESSAGE;
 
         /// <summary>
-        /// Create a generic status
+        /// Create a generic result
         /// </summary>
-        public StatusBase() { }
+        public ResultBase() { }
 
         /// <summary>
-        /// Create a status
+        /// Create a result
         /// </summary>
         /// <param name="successMessage">The default success message</param>
-        public StatusBase(string successMessage)
+        public ResultBase(string successMessage)
         {
             if (!String.IsNullOrWhiteSpace(successMessage))
             {
@@ -29,12 +29,12 @@ namespace Clawfoot.Status
         }
 
         /// <summary>
-        /// The list of errors of this status
+        /// The list of errors of this result
         /// </summary>
         public IEnumerable<IError> Errors => _errors.AsEnumerable();
 
         /// <summary>
-        /// The list of exceptions contained in this status
+        /// The list of exceptions contained in this result
         /// </summary>
         public IEnumerable<Exception> Exceptions => _exceptions.AsEnumerable();
 
@@ -54,12 +54,12 @@ namespace Clawfoot.Status
         public bool HasErrors => _errors.Count > 0;
 
         /// <summary>
-        /// If the status contains exceptions
+        /// If the result contains exceptions
         /// </summary>
         public bool HasExceptions => _exceptions.Count > 0;
 
         /// <summary>
-        /// The message of this status, does not combine error messages. Use ToString() instead
+        /// The message of this result, does not combine error messages. Use ToString() instead
         /// </summary>
         public string Message
         {
@@ -100,108 +100,108 @@ namespace Clawfoot.Status
         }
         
         /// <summary>
-        /// Will combine the errors and exceptions of the provided status with this status. 
-        /// If the provided status has a different success message, and no errors, replaces this statuses success message with the provided status.
-        /// Returns this status
+        /// Will combine the errors and exceptions of the provided result with this result.
+        /// If the provided result has a different success message, and no errors, replaces this results success message with the provided result.
+        /// Returns this result
         /// </summary>
-        /// <param name="status">The status to merge into this status</param>
-        /// <returns>This status</returns>
-        public virtual StatusBase MergeStatuses<TStatus>(TStatus status)
-            where TStatus : StatusBase
+        /// <param name="result">The result to merge into this result</param>
+        /// <returns>This result</returns>
+        public virtual ResultBase MergeResults<TResultType>(TResultType result)
+            where TResultType : ResultBase
         {
-            _errors.AddRange(status.Errors);
-            _exceptions.AddRange(status.Exceptions);
+            _errors.AddRange(result.Errors);
+            _exceptions.AddRange(result.Exceptions);
 
             if (!HasErrors)
             {
-                _successMessage = status.Message;
+                _successMessage = result.Message;
             }
 
             return this;
         }
         
         // TODO: THIS MAY BE A MISTAKE
-        public virtual TReturn MergeStatuses<TReturn, TStatus>(TStatus status)
-            where TReturn : StatusBase
-            where TStatus : StatusBase
+        public virtual TReturn MergeResults<TReturn, TResultType>(TResultType result)
+            where TReturn : ResultBase
+            where TResultType : ResultBase
         {
-            return (TReturn)MergeStatuses(status);
+            return (TReturn)MergeResults(result);
         }
     }
     
-    public abstract class AbstractStatus<TConcrete> : StatusBase
-        where TConcrete : AbstractStatus<TConcrete>
+    public abstract class AbstractResult<TConcrete> : ResultBase
+        where TConcrete : AbstractResult<TConcrete>
     {
         
         /// <summary>
-        /// Create a generic status
+        /// Create a generic result
         /// </summary>
-        public AbstractStatus() { }
+        public AbstractResult() { }
 
         /// <summary>
-        /// Create a status
+        /// Create a result
         /// </summary>
         /// <param name="successMessage">The default success message</param>
-        public AbstractStatus(string successMessage) : base(successMessage) { }
+        public AbstractResult(string successMessage) : base(successMessage) { }
         
         /// <summary>
-        /// Converts this <see cref="Status"/> into an <see cref="Status{T}"/>
+        /// Converts this <see cref="Result"/> into an <see cref="Result{T}"/>
         /// </summary>
-        /// <typeparam name="T">The Generic Type for the returned status</typeparam>
+        /// <typeparam name="T">The Generic Type for the returned result</typeparam>
         /// <returns></returns>
-        public virtual Status<T> As<T>()
+        public virtual Result<T> As<T>()
         {
-            Status<T> status = new Status<T>();
+            Result<T> result = new Result<T>();
             switch (this)
             {
-                case Status thisStatus:
-                    status.MergeStatuses(thisStatus);
+                case Result thisResult:
+                    result.MergeResults(thisResult);
                     break;
-                case Status<T> thisStatusT:
-                    status.MergeStatuses(thisStatusT);
+                case Result<T> thisResultT:
+                    result.MergeResults(thisResultT);
                     break;
             }
 
-            return status;
+            return result;
         }
 
         /// <summary>
-        /// Creates a <see cref="Status{T}"/>, merges this status into it, and sets the result
+        /// Creates a <see cref="Result{T}"/>, merges this result into it, and sets the result
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// /// <param name="result"></param>
-        /// <returns>A new status</returns>
-        public Status<T> SetResult<T>(T result)
+        /// <returns>A new result</returns>
+        public Result<T> SetResult<T>(T result)
         {
-            Status<T> status = new Status<T>();
+            Result<T> resultObj = new Result<T>();
             switch (this)
             {
-                case Status thisStatus:
-                    status.MergeStatuses(thisStatus);
+                case Result thisResult:
+                    resultObj.MergeResults(thisResult);
                     break;
-                case Status<T> thisStatusT:
-                    status.MergeStatuses(thisStatusT);
+                case Result<T> thisResultT:
+                    resultObj.MergeResults(thisResultT);
                     break;
             }
 
-            status.SetResult(result);
-            return status;
+            resultObj.SetResult(result);
+            return resultObj;
         }
         
         /// <summary>
-        /// Will combine the errors and exceptions of this status into the provided status.
-        /// Returns the provided status
+        /// Will combine the errors and exceptions of this result into the provided result.
+        /// Returns the provided result
         /// </summary>
-        /// <param name="status">The status to merge into</param>
-        /// <returns>The provided status</returns>
-        public TStatus MergeIntoStatus<TStatus>(TStatus status)
-            where TStatus : StatusBase
+        /// <param name="result">The result to merge into</param>
+        /// <returns>The provided result</returns>
+        public TResultType MergeIntoResult<TResultType>(TResultType result)
+            where TResultType : ResultBase
         {
-            return (TStatus)status.MergeStatuses(this);
+            return (TResultType)result.MergeResults(this);
         }
 
         /// <summary>
-        /// Adds the provided exception to the status.
+        /// Adds the provided exception to the result.
         /// This also adds the exception message as <see langword="abstract"/>new error
         /// </summary>
         /// <param name="ex"></param>
@@ -214,7 +214,7 @@ namespace Clawfoot.Status
         }
 
         /// <summary>
-        /// Adds a new error to the status
+        /// Adds a new error to the result
         /// </summary>
         /// <param name="message">The error message</param>
         /// <param name="userMessage">The user friendly error message</param>
@@ -226,10 +226,10 @@ namespace Clawfoot.Status
         }
 
         /// <summary>
-        /// Adds a new error to the status
+        /// Adds a new error to the result
         /// </summary>
         /// <param name="error"></param>
-        /// <returns>This status</returns>
+        /// <returns>This result</returns>
         public TConcrete AddError(IError error)
         {
             _errors.Add(error);
@@ -237,10 +237,10 @@ namespace Clawfoot.Status
         }
 
         /// <summary>
-        /// Adds multiple errors to the status
+        /// Adds multiple errors to the result
         /// </summary>
         /// <param name="errors"></param>
-        /// <returns>This status</returns>
+        /// <returns>This result</returns>
         public TConcrete AddErrors(IEnumerable<IError> errors)
         {
             foreach (IError error in errors)
@@ -252,7 +252,7 @@ namespace Clawfoot.Status
         }
 
         /// <summary>
-        /// Adds a new error to the status if the item is null
+        /// Adds a new error to the result if the item is null
         /// </summary>
         /// <remarks>This only accepts reference types</remarks>
         /// <param name="value">>The value that is checked</param>
@@ -270,7 +270,7 @@ namespace Clawfoot.Status
         }
 
         /// <summary>
-        /// Adds a new error to the status if the item is null
+        /// Adds a new error to the result if the item is null
         /// </summary>
         /// <remarks>This only accepts structs that implement <see cref="Nullable{T}"/></remarks>
         /// <param name="value">>The nullable value that is checked</param>
@@ -288,7 +288,7 @@ namespace Clawfoot.Status
         }
 
         /// <summary>
-        /// Adds a new error to the status if the item is null or is default(T)
+        /// Adds a new error to the result if the item is null or is default(T)
         /// </summary>
         /// <remarks>This only accepts reference types</remarks>
         /// <param name="value">>The value that is checked</param>
@@ -306,7 +306,7 @@ namespace Clawfoot.Status
         }
 
         /// <summary>
-        /// Adds a new error to the status if the item is null or is default(T)
+        /// Adds a new error to the result if the item is null or is default(T)
         /// </summary>
         /// <remarks>This only accepts structs that implement <see cref="Nullable{T}"/></remarks>
         /// <param name="value">>The nullable value that is checked</param>

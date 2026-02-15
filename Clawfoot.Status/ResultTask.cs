@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
@@ -6,52 +6,52 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Clawfoot.Status
+namespace Clawfoot.Result
 {
-    [AsyncMethodBuilder(typeof(StatusTaskMethodBuilder))]
-    public class StatusTask
+    [AsyncMethodBuilder(typeof(ResultTaskMethodBuilder))]
+    public class ResultTask
     {
         internal TaskCompletionSource<object> Tcs { get; } = new TaskCompletionSource<object>();
         
-        public Status Status { get; set; }
+        public Result Result { get; set; }
         public Task Task { get; set; }
 
-        public StatusTask()
+        public ResultTask()
         {
             this.Task = Task.CompletedTask;
         }
 
-        public StatusTask(Task task)
+        public ResultTask(Task task)
         {
             this.Task = task;
         }
         
-        public void CompleteWithStatus(Status status)
+        public void CompleteWithResult(Result result)
         {
-            this.Status = status;
+            this.Result = result;
             Tcs.SetResult(default); // Indicate completion without a result
         }
 
-        public StatusTask Awaiter() => this;
+        public ResultTask Awaiter() => this;
         public bool IsCompleted => this.Task.IsCompleted;
         public void GetResult() => this.Task.GetAwaiter().GetResult();
         
-        public static implicit operator StatusTask(Status status)
+        public static implicit operator ResultTask(Result result)
         {
-            var statusTask = new StatusTask(Task.CompletedTask);
-            statusTask.Status = status;
-            return statusTask;
+            var resultTask = new ResultTask(Task.CompletedTask);
+            resultTask.Result = result;
+            return resultTask;
         }
     }
     
-    public class StatusTaskMethodBuilder
+    public class ResultTaskMethodBuilder
     {
         private AsyncTaskMethodBuilder builder;
-        public StatusTask StatusTask { get; set; }
+        public ResultTask ResultTask { get; set; }
 
-        public static StatusTaskMethodBuilder Create()
+        public static ResultTaskMethodBuilder Create()
         {
-            var methodBuilder = new StatusTaskMethodBuilder { StatusTask = new StatusTask() };
+            var methodBuilder = new ResultTaskMethodBuilder { ResultTask = new ResultTask() };
             methodBuilder.builder = AsyncTaskMethodBuilder.Create();
             return methodBuilder;
         }
@@ -63,9 +63,9 @@ namespace Clawfoot.Status
 
         public void SetResult()
         {
-            // Assuming a default success status if not explicitly set
-            StatusTask.Status ??= Status.Ok();
-            StatusTask.Tcs.SetResult(null); // Signal completion
+            // Assuming a default success result if not explicitly set
+            ResultTask.Result ??= Result.Ok();
+            ResultTask.Tcs.SetResult(null); // Signal completion
         }
 
         public void SetException(Exception exception) => builder.SetException(exception);

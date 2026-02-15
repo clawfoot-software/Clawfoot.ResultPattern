@@ -1,7 +1,7 @@
 using Shouldly;
 using FakeItEasy;
 
-namespace Clawfoot.Status.Tests;
+namespace Clawfoot.Result.Tests;
 
 public class MergingTests
 {
@@ -10,66 +10,66 @@ public class MergingTests
     private const int TEST_VALUE2 = 55;
     
     [Fact]
-    public void StatusT_WithStatus_Merges()
+    public void ResultT_WithResult_Merges()
     {
-        Status<int> resultStatus = new Status<int>(TEST_VALUE);
-        Status status = new Status();
+        Result<int> result = new Result<int>(TEST_VALUE);
+        Result resultObj = new Result();
         
-        status.AddError(ERROR_MESSAGE);
+        resultObj.AddError(ERROR_MESSAGE);
         
-        Status<int>? merged = resultStatus.MergeStatuses(status);
+        Result<int>? merged = result.MergeResults(resultObj);
         
-        merged.ShouldBe(resultStatus);
-        resultStatus.Success.ShouldBeFalse();
-        resultStatus.Result.ShouldBe(TEST_VALUE);
-        resultStatus.Errors.Count().ShouldBe(1);
-        resultStatus.Errors.First().Message.ShouldBe(ERROR_MESSAGE);
+        merged.ShouldBe(result);
+        result.Success.ShouldBeFalse();
+        result.Value.ShouldBe(TEST_VALUE);
+        result.Errors.Count().ShouldBe(1);
+        result.Errors.First().Message.ShouldBe(ERROR_MESSAGE);
     }
     
     [Fact]
-    public void StatusT_WithStatusT_Merges()
+    public void ResultT_WithResultT_Merges()
     {
-        Status<int> resultStatus = new Status<int>(TEST_VALUE);
-        Status<int> resultStatus2 = new Status<int>();
+        Result<int> result = new Result<int>(TEST_VALUE);
+        Result<int> result2 = new Result<int>();
         
-        resultStatus2.AddError(ERROR_MESSAGE);
+        result2.AddError(ERROR_MESSAGE);
         
-        Status<int>? merged = resultStatus.MergeStatuses(resultStatus2);
+        Result<int>? merged = result.MergeResults(result2);
         
-        merged.ShouldBe(resultStatus);
-        resultStatus.Success.ShouldBeFalse();
-        resultStatus.Result.ShouldBe(TEST_VALUE);
-        resultStatus.Errors.Count().ShouldBe(1);
-        resultStatus.Errors.First().Message.ShouldBe(ERROR_MESSAGE);
+        merged.ShouldBe(result);
+        result.Success.ShouldBeFalse();
+        result.Value.ShouldBe(TEST_VALUE);
+        result.Errors.Count().ShouldBe(1);
+        result.Errors.First().Message.ShouldBe(ERROR_MESSAGE);
     }
     
     [Fact]
-    public void Status_WithStatusT_Merges()
+    public void Result_WithResultT_Merges()
     {
-        Status status = new Status();
-        Status<int> resultStatus = new Status<int>();
+        Result result = new Result();
+        Result<int> resultObj = new Result<int>();
         
-        status.AddError(ERROR_MESSAGE);
+        result.AddError(ERROR_MESSAGE);
         
-        Status merged = status.MergeStatuses(resultStatus);
+        Result merged = result.MergeResults(resultObj);
         
-        merged.ShouldBe(status);
-        status.Success.ShouldBeFalse();
-        status.Errors.Count().ShouldBe(1);
-        status.Errors.First().Message.ShouldBe(ERROR_MESSAGE);
+        merged.ShouldBe(result);
+        result.Success.ShouldBeFalse();
+        result.Errors.Count().ShouldBe(1);
+        result.Errors.First().Message.ShouldBe(ERROR_MESSAGE);
     }
 
     [Fact]
-    public void Regression_GenericStatus_MergeInNonGeneric_ShouldNeverCallAsT()
+    public void Regression_GenericResult_MergeInNonGeneric_ShouldNeverCallAsT()
     {
         // Regression test to ensure that we are avoiding implicit casts instead of direct implementation calls
-        // The implicit Status -> Status<T> cast calls .As<T>() and was causing a stack overflow
+        // The implicit Result -> Result<T> cast calls .As<T>() and was causing a stack overflow
         
-        Status<int> status = new Status<int>();
-        Status status2 = A.Fake<Status>();
+        Result<int> result = new Result<int>();
+        Result result2 = A.Fake<Result>();
         
-        status.MergeStatuses(status2);
+        result.MergeResults(result2);
         
-        A.CallTo(() => status2.As<int>()).MustNotHaveHappened();
+        A.CallTo(() => result2.As<int>()).MustNotHaveHappened();
     }
 }
