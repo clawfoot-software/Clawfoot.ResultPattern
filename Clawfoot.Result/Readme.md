@@ -58,7 +58,7 @@ Result r = Result.FromError(UserErrors.NotFound);
 
 ## Features
 
-- **Result** and **Result<T>** with `Success`, `HasErrors`, `Errors`, `Message`, `Value`
+- **Result** and **Result&lt;T&gt;** with `Success`, `HasErrors`, `Errors`, `Message`, `Value`
 - **Merge** results to combine errors and optional values from multiple steps
 - **Invoke** / **Do** and **InvokeAsync** to wrap calls and add errors/exceptions to the current result
 - **Error** and **IError** for structured errors (Code, Message, UserMessage, GroupName)

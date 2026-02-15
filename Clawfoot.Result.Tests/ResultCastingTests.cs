@@ -1,6 +1,6 @@
 using Shouldly;
 
-namespace Clawfoot.Result.Tests;
+namespace Clawfoot.ResultPattern.Tests;
 
 public class ResultCastingTests
 {

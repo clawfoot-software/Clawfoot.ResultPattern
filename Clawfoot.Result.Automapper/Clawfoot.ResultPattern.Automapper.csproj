@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;</TargetFrameworks>
+    <LangVersion>8.0</LangVersion>
+    <Version>0.3.0</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Douglas Gaskell</Authors>
+    <Company>Clawfoot Software</Company>
+    <Copyright>2019 Douglas Gaskell</Copyright>
+    <RepositoryUrl>https://github.com/clawfoot-software/Clawfoot/tree/master/Clawfoot.ResultPattern.Automapper</RepositoryUrl>
+    <Description>AutoMapper extensions for Clawfoot.ResultPattern</Description>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageLicenseExpression>LGPL-3.0-only</PackageLicenseExpression>
+    <PackageId>Clawfoot.ResultPattern.Automapper</PackageId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="8.1.1" />
+    <PackageReference Include="SauceControl.InheritDoc" Version="0.4.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Clawfoot.Result\Clawfoot.ResultPattern.csproj" />
+  </ItemGroup>
+
+</Project>

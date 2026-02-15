@@ -26,7 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Clawfoot.Status\Clawfoot.Status.csproj" />
+      <ProjectReference Include="..\Clawfoot.Result\Clawfoot.ResultPattern.csproj" />
     </ItemGroup>
 
 </Project>

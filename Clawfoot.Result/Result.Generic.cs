@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Clawfoot.Result
+namespace Clawfoot.ResultPattern
 {
     /// <summary>
     /// A generic version of a result

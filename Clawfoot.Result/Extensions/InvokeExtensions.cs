@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Clawfoot.Result
+namespace Clawfoot.ResultPattern
 {
     public static class InvokeExtensions
     {

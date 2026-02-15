@@ -1,25 +1,29 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <RootNamespace>Clawfoot.ResultPattern</RootNamespace>
+    <PackageId>Clawfoot.ResultPattern</PackageId>
     <TargetFrameworks>netstandard2.1;</TargetFrameworks>
+    <Description>A Results pattern library for .NET: return success/failure and propagate errors across layers without throwing. Use Result and Result&lt;T&gt; instead of exceptions for expected failure paths.</Description>
+    <PackageTags>result;results-pattern;error-handling;netstandard;railway-oriented</PackageTags>
     <Authors>Douglas Gaskell</Authors>
     <Company>Clawfoot Software</Company>
     <Product />
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <RepositoryUrl>https://github.com/clawfoot-software/Clawfoot/tree/master/Clawfoot.Status</RepositoryUrl>
-    <Copyright>2023 Douglas Gaskell</Copyright>
-    <Version>2.1.0</Version>
+    <RepositoryUrl>https://github.com/clawfoot-software/Clawfoot/tree/master/Clawfoot.ResultPattern</RepositoryUrl>
+    <Copyright>2026 Douglas Gaskell</Copyright>
+    <Version>3.0.0</Version>
     <LangVersion>8.0</LangVersion>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageLicenseExpression>LGPL-3.0-only</PackageLicenseExpression>
-    <AssemblyVersion>0.2.1.0</AssemblyVersion>
-    <FileVersion>0.2.1.0</FileVersion>
+    <AssemblyVersion>0.3.0.0</AssemblyVersion>
+    <FileVersion>0.3.0.0</FileVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
-    <DocumentationFile>.\bin\Release\Clawfoot.Status.xml</DocumentationFile>
+    <DocumentationFile>.\bin\Release\Clawfoot.ResultPattern.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

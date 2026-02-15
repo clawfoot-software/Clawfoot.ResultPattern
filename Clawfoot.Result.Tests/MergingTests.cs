@@ -1,7 +1,7 @@
 using Shouldly;
 using FakeItEasy;
 
-namespace Clawfoot.Result.Tests;
+namespace Clawfoot.ResultPattern.Tests;
 
 public class MergingTests
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Clawfoot.Result
+namespace Clawfoot.ResultPattern
 {
     public class Error : IError
     {

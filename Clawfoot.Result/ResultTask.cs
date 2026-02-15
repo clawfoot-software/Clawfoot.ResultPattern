@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Clawfoot.Result
+namespace Clawfoot.ResultPattern
 {
     [AsyncMethodBuilder(typeof(ResultTaskMethodBuilder))]
     public class ResultTask

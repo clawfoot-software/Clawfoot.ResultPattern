@@ -1,5 +1,5 @@
 using AutoMapper;
-using Clawfoot.Result;
+using Clawfoot.ResultPattern;
 using System;
 using System.Collections.Generic;
 using System.Text;

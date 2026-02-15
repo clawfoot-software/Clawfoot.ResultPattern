@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Clawfoot.Result;
+using Clawfoot.ResultPattern;
 
-namespace Clawfoot.Result
+namespace Clawfoot.ResultPattern
 {
     /// <summary>
     /// Exists to help with namespace concerns or locals conflicts
@@ -66,7 +66,7 @@ namespace Clawfoot.Result
         public static Result FromError<TErrorEnum>(TErrorEnum errorEnum, params string[] errorParams)
              where TErrorEnum : Enum
         {
-            IError error = Clawfoot.Result.Error.From(errorEnum, errorParams);
+            IError error = Clawfoot.ResultPattern.Error.From(errorEnum, errorParams);
             return Result.Error(error);
         }
 
@@ -81,7 +81,7 @@ namespace Clawfoot.Result
         public static Result FromError<TErrorEnum>(TErrorEnum errorEnum, string message, string userMessage = "")
              where TErrorEnum : Enum
         {
-            IError error = Clawfoot.Result.Error.From(errorEnum, message, userMessage);
+            IError error = Clawfoot.ResultPattern.Error.From(errorEnum, message, userMessage);
             return Result.Error(error);
         }
 

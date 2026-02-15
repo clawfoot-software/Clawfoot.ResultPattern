@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Clawfoot.Result
+namespace Clawfoot.ResultPattern
 {
 
     /// <summary>

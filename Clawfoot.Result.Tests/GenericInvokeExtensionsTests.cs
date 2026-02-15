@@ -1,6 +1,6 @@
 using Shouldly;
 
-namespace Clawfoot.Result.Tests;
+namespace Clawfoot.ResultPattern.Tests;
 
 // Largely testing for build errors around ambiguous methods
 public class GenericInvokeExtensionsTests

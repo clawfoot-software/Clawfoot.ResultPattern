@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Clawfoot.Result
+namespace Clawfoot.ResultPattern
 {
     public abstract class ResultBase
     {
