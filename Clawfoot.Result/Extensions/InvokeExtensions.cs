@@ -12,9 +12,9 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Invokes the delegate; on exception returns a new result with the error. Returns result unchanged on success.
+        /// Invokes the delegate; on exception returns a new result with the error (exception preserved by default). Returns result unchanged on success.
         /// </summary>
-        public static TResultType Invoke<TResultType>(this TResultType result, Action action, bool keepException = false)
+        public static TResultType Invoke<TResultType>(this TResultType result, Action action, bool keepException = true)
             where TResultType : AbstractResult<TResultType>
         {
             try
@@ -29,9 +29,9 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Invokes the delegate; on exception returns a new result with the error. Returns result unchanged on success.
+        /// Invokes the delegate; on exception returns a new result with the error (exception preserved by default). Returns result unchanged on success.
         /// </summary>
-        public static async Task<TResultType> InvokeAsync<TResultType>(this TResultType result, Func<Task> action, bool keepException = false)
+        public static async Task<TResultType> InvokeAsync<TResultType>(this TResultType result, Func<Task> action, bool keepException = true)
             where TResultType : AbstractResult<TResultType>
         {
             try
@@ -46,9 +46,9 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Invokes the delegate; on exception returns a new result with the error. Returns result unchanged on success.
+        /// Invokes the delegate; on exception returns a new result with the error (exception preserved by default). Returns result unchanged on success.
         /// </summary>
-        public static TResultType Invoke<TParam, TResultType>(this TResultType result, Action<TParam> action, TParam obj, bool keepException = false)
+        public static TResultType Invoke<TParam, TResultType>(this TResultType result, Action<TParam> action, TParam obj, bool keepException = true)
             where TResultType : AbstractResult<TResultType>
         {
             try
@@ -63,12 +63,12 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Invokes the delegate; on exception returns a new result with the error. Returns result unchanged on success.
+        /// Invokes the delegate; on exception returns a new result with the error (exception preserved by default). Returns result unchanged on success.
         /// </summary>
         public static async Task<TResultType> InvokeAsync<TParam, TResultType>(this TResultType result,
             Func<TParam, Task> action,
             TParam obj,
-            bool keepException = false)
+            bool keepException = true)
             where TResultType : AbstractResult<TResultType>
         {
             try
@@ -83,9 +83,9 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Invokes the delegate that returns a Result; returns a new Result combining this and the invoked result.
+        /// Invokes the delegate that returns a Result; returns a new Result combining this and the invoked result. On exception, preserves the exception by default.
         /// </summary>
-        public static Result Invoke<TResultType>(this TResultType result, Func<Result> func, bool keepException = false)
+        public static Result Invoke<TResultType>(this TResultType result, Func<Result> func, bool keepException = true)
             where TResultType : AbstractResult<TResultType>
         {
             try
@@ -101,9 +101,9 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Invokes the delegate that returns a Result; returns a new Result combining this and the invoked result.
+        /// Invokes the delegate that returns a Result; returns a new Result combining this and the invoked result. On exception, preserves the exception by default.
         /// </summary>
-        public static async Task<Result> InvokeAsync<TResultType>(this TResultType result, Func<Task<Result>> func, bool keepException = false)
+        public static async Task<Result> InvokeAsync<TResultType>(this TResultType result, Func<Task<Result>> func, bool keepException = true)
             where TResultType : AbstractResult<TResultType>
         {
             try
@@ -119,9 +119,9 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Invokes the delegate that returns Result&lt;TResult&gt;; returns a new Result&lt;TResult&gt; combining this result's errors with the invoked result (value from invoked).
+        /// Invokes the delegate that returns Result<TResult>; returns a new Result<TResult> combining this result's errors with the invoked result (value from invoked).
         /// </summary>
-        public static Result<TResult> InvokeResult<TResult, TResultType>(this TResultType result, Func<Result<TResult>> func, bool keepException = false)
+        public static Result<TResult> InvokeResult<TResult, TResultType>(this TResultType result, Func<Result<TResult>> func, bool keepException = true)
             where TResultType : AbstractResult<TResultType>
         {
             try
@@ -136,11 +136,11 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Invokes the delegate that returns Result&lt;TResult&gt;; returns a new Result&lt;TResult&gt; combining this result's errors with the invoked result (value from invoked).
+        /// Invokes the delegate that returns Result<TResult>; returns a new Result<TResult> combining this result's errors with the invoked result (value from invoked).
         /// </summary>
         public static async Task<Result<TResult>> InvokeResultAsync<TResult, TResultType>(this TResultType result,
             Func<Task<Result<TResult>>> func,
-            bool keepException = false)
+            bool keepException = true)
             where TResultType : AbstractResult<TResultType>
         {
             try
@@ -155,9 +155,9 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Invokes the delegate; on success returns a new Result&lt;TResult&gt; with the value. On exception returns a result with the error.
+        /// Invokes the delegate; on success returns a new Result<TResult> with the value. On exception returns a result with the error (exception preserved by default).
         /// </summary>
-        public static Result<TResult> InvokeResult<TResult, TResultType>(this TResultType result, Func<TResult> func, bool keepException = false)
+        public static Result<TResult> InvokeResult<TResult, TResultType>(this TResultType result, Func<TResult> func, bool keepException = true)
             where TResultType : AbstractResult<TResultType>
         {
             try
@@ -172,11 +172,11 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Invokes the delegate; on success returns a new Result&lt;TResult&gt; with the value. On exception returns a result with the error.
+        /// Invokes the delegate; on success returns a new Result<TResult> with the value. On exception returns a result with the error (exception preserved by default).
         /// </summary>
         public static async Task<Result<TResult>> InvokeResultAsync<TResult, TResultType>(this TResultType result,
             Func<Task<TResult>> func,
-            bool keepException = false)
+            bool keepException = true)
             where TResultType : AbstractResult<TResultType>
         {
             try

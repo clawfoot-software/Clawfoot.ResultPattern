@@ -5,7 +5,7 @@ using Shouldly;
 namespace Clawfoot.ResultPattern.Tests;
 
 /// <summary>
-/// Surface area tests for Result&lt;T&gt; (constructors, WithValue, HasResult, To, conversions, Combine, Deconstruct).
+/// Surface area tests for Result<T> (constructors, WithValue, HasResult, To, conversions, Combine, Deconstruct).
 /// </summary>
 public class ResultGenericSurfaceTests
 {

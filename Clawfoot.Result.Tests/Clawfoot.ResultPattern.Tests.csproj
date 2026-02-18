@@ -27,6 +27,12 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Clawfoot.Result\Clawfoot.ResultPattern.csproj" />
+      <!-- Direct analyzer reference so the analyzer runs in this project (and in the IDE). -->
+      <ProjectReference Include="..\Clawfoot.Result.Analyzers\Clawfoot.Result.Analyzers.csproj">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>analyzers; build</IncludeAssets>
+        <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      </ProjectReference>
     </ItemGroup>
 
 </Project>

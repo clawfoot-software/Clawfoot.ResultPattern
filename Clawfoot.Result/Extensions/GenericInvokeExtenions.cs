@@ -6,9 +6,9 @@ namespace Clawfoot.ResultPattern
     public static class GenericInvokeExtenions
     {
         /// <summary>
-        /// Invokes the delegate; on success returns a new result with the value. On exception returns a new result with the error.
+        /// Invokes the delegate; on success returns a new result with the value. On exception returns a new result with the error (exception preserved by default).
         /// </summary>
-        public static Result<T> InvokeResult<T>(this Result<T> result, Func<T> func, bool keepException = false)
+        public static Result<T> InvokeResult<T>(this Result<T> result, Func<T> func, bool keepException = true)
         {
             try
             {
@@ -22,9 +22,9 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Invokes the delegate that returns Result&lt;T&gt;; returns a new result combining this and the invoked result (last value wins).
+        /// Invokes the delegate that returns Result<T>; returns a new result combining this and the invoked result (last value wins). On exception, preserves the exception by default.
         /// </summary>
-        public static Result<T> InvokeResult<T>(this Result<T> result, Func<Result<T>> func, bool keepException = false)
+        public static Result<T> InvokeResult<T>(this Result<T> result, Func<Result<T>> func, bool keepException = true)
         {
             try
             {
@@ -38,9 +38,9 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Invokes the delegate; on success returns a new result with the value. On exception returns a new result with the error.
+        /// Invokes the delegate; on success returns a new result with the value. On exception returns a new result with the error (exception preserved by default).
         /// </summary>
-        public static async Task<Result<T>> InvokeResultAsync<T>(this Result<T> result, Func<Task<T>> func, bool keepException = false)
+        public static async Task<Result<T>> InvokeResultAsync<T>(this Result<T> result, Func<Task<T>> func, bool keepException = true)
         {
             try
             {
@@ -54,9 +54,9 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Invokes the delegate that returns Result&lt;T&gt;; returns a new result combining this and the invoked result (last value wins).
+        /// Invokes the delegate that returns Result<T>; returns a new result combining this and the invoked result (last value wins). On exception, preserves the exception by default.
         /// </summary>
-        public static async Task<Result<T>> InvokeResultAsync<T>(this Result<T> result, Func<Task<Result<T>>> func, bool keepException = false)
+        public static async Task<Result<T>> InvokeResultAsync<T>(this Result<T> result, Func<Task<Result<T>>> func, bool keepException = true)
         {
             try
             {

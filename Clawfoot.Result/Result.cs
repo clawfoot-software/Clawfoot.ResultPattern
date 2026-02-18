@@ -103,7 +103,7 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Combines a ResultBase with a Result&lt;T&gt; into a single Result&lt;T&gt; (errors combined, value from typed result)
+        /// Combines a ResultBase with a Result<T> into a single Result<T> (errors combined, value from typed result)
         /// </summary>
         public static Result<T> Combine<T>(ResultBase baseResult, Result<T> typedResult)
         {
@@ -116,7 +116,7 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Combines any mix of Result/Result&lt;T&gt; into a single Result (no value)
+        /// Combines any mix of Result/Result<T> into a single Result (no value)
         /// </summary>
         public static Result Combine(params ResultBase[] results)
         {

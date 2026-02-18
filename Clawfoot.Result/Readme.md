@@ -58,12 +58,27 @@ Result r = Result.FromError(UserErrors.NotFound);
 
 ## Features
 
-- **Result** and **Result&lt;T&gt;** with `Success`, `HasErrors`, `Errors`, `Message`, `Value`
+- **Result** and **Result<T>** with `Success`, `HasErrors`, `Errors`, `Message`, `Value`
 - **Merge** results to combine errors and optional values from multiple steps
 - **Invoke** / **Do** and **InvokeAsync** to wrap calls and add errors/exceptions to the current result
 - **Error** and **IError** for structured errors (Code, Message, UserMessage, GroupName)
 - **ErrorAttribute** and **Error.From(enum)** for enum-driven error messages
 - Implicit conversion to `bool` (`if (!result) ...`)
+
+## Analyzer (CFRESULT001)
+
+The package includes a Roslyn analyzer that warns when a `With*` method (`WithError`, `WithValue`, `WithException`, etc.) is called without using the return value. These methods return a new result; discarding it is usually a bug.
+
+```csharp
+// Warning CFRESULT001: return value must be used
+result.WithError("something went wrong");
+
+// OK: assign or return
+var updated = result.WithError("something went wrong");
+return result.WithError("something went wrong");
+```
+
+To suppress in rare cases: `#pragma warning disable CFRESULT001`
 
 ## License
 

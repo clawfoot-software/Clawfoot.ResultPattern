@@ -6,7 +6,7 @@ using Shouldly;
 namespace Clawfoot.ResultPattern.Tests;
 
 /// <summary>
-/// Surface area tests for ResultBase and AbstractResult&lt;T&gt;, using Result as the concrete type.
+/// Surface area tests for ResultBase and AbstractResult<T>, using Result as the concrete type.
 /// </summary>
 public class ResultBaseSurfaceTests
 {
