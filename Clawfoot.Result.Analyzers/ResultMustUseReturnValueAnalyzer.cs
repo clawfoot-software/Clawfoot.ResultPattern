@@ -11,9 +11,9 @@ namespace Clawfoot.Result.Analyzers
     {
         public const string DiagnosticId = "CFRESULT001";
 
-        private static readonly LocalizableString Title = "Result With* return value must be used";
+        private static readonly LocalizableString Title = "Result method return value must be used";
         private static readonly LocalizableString MessageFormat = "The return value of '{0}' must be assigned, returned, or otherwise used. Discarding it is likely a bug.";
-        private static readonly LocalizableString Description = "Methods like WithError, WithValue, etc. return a new result; the return value should not be discarded.";
+        private static readonly LocalizableString Description = "Methods like WithError, WithValue, Invoke, InvokeAsync, and Combine return a new result; the return value should not be discarded.";
         private const string Category = "Usage";
 
         private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
@@ -35,6 +35,14 @@ namespace Clawfoot.Result.Analyzers
             context.RegisterSyntaxNodeAction(AnalyzeInvocation, SyntaxKind.InvocationExpression);
         }
 
+        private static bool IsTargetMethod(string methodName)
+        {
+            return methodName.StartsWith("With", System.StringComparison.Ordinal) ||
+                   methodName.Equals("Invoke", System.StringComparison.Ordinal) ||
+                   methodName.Equals("InvokeAsync", System.StringComparison.Ordinal) ||
+                   methodName.Equals("Combine", System.StringComparison.Ordinal);
+        }
+
         private static void AnalyzeInvocation(SyntaxNodeAnalysisContext context)
         {
             var invocation = (InvocationExpressionSyntax)context.Node;
@@ -47,7 +55,7 @@ namespace Clawfoot.Result.Analyzers
             if (!(invocation.Expression is MemberAccessExpressionSyntax memberAccess))
                 return;
             var syntaxName = memberAccess.Name.Identifier.ValueText;
-            if (!syntaxName.StartsWith("With", System.StringComparison.Ordinal))
+            if (!IsTargetMethod(syntaxName))
                 return;
 
             string methodName;
