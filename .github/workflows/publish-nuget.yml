@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write  # required to push version bump commit and tag
+  id-token: write  # required for NuGet trusted publishing (GitHub OIDC token)
 
 env:
   PROJECT_PATH: Clawfoot.Result/Clawfoot.ResultPattern.csproj
@@ -69,17 +70,24 @@ jobs:
             --output ./out \
             -p:Version=${{ inputs.version }}
 
+      # Temporary API key is valid for 1 hour, so request it right before pushing
+      - name: NuGet login (OIDC -> temp API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}  # nuget.org profile name, NOT email
+
       - name: Push package to NuGet
         run: |
           dotnet nuget push ./out/*.nupkg \
-            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --api-key ${{ steps.login.outputs.NUGET_API_KEY }} \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
 
       - name: Push symbol package to NuGet
         run: |
           dotnet nuget push ./out/*.snupkg \
-            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --api-key ${{ steps.login.outputs.NUGET_API_KEY }} \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
 
