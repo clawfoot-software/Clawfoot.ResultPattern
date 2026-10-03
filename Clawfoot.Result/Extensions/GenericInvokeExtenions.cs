@@ -8,21 +8,25 @@ namespace Clawfoot.ResultPattern
         /// <summary>
         /// Invokes the delegate; on success returns a new result with the value. On exception returns a new result with the error (exception preserved by default).
         /// </summary>
+        /// <exception cref="ArgumentNullException">The delegate returned null and <paramref name="result"/> is successful</exception>
         public static Result<T> InvokeResult<T>(this Result<T> result, Func<T> func, bool keepException = true)
         {
+            T value;
             try
             {
-                T value = func.Invoke();
-                return result.WithValue(value);
+                value = func.Invoke();
             }
             catch (Exception ex)
             {
                 return keepException ? (Result<T>)result.WithException(ex) : (Result<T>)result.WithError(ex.Message);
             }
+
+            // WithValue enforces the non-null contract at runtime
+            return result.WithValue(value!);
         }
 
         /// <summary>
-        /// Invokes the delegate that returns Result<T>; returns a new result combining this and the invoked result (last value wins). On exception, preserves the exception by default.
+        /// Invokes the delegate that returns <see cref="Result{T}"/>; returns a new result combining this and the invoked result (last value wins). On exception, preserves the exception by default.
         /// </summary>
         public static Result<T> InvokeResult<T>(this Result<T> result, Func<Result<T>> func, bool keepException = true)
         {
@@ -40,21 +44,25 @@ namespace Clawfoot.ResultPattern
         /// <summary>
         /// Invokes the delegate; on success returns a new result with the value. On exception returns a new result with the error (exception preserved by default).
         /// </summary>
+        /// <exception cref="ArgumentNullException">The delegate returned null and <paramref name="result"/> is successful</exception>
         public static async Task<Result<T>> InvokeResultAsync<T>(this Result<T> result, Func<Task<T>> func, bool keepException = true)
         {
+            T value;
             try
             {
-                T value = await func.Invoke();
-                return result.WithValue(value);
+                value = await func.Invoke();
             }
             catch (Exception ex)
             {
                 return keepException ? (Result<T>)result.WithException(ex) : (Result<T>)result.WithError(ex.Message);
             }
+
+            // WithValue enforces the non-null contract at runtime
+            return result.WithValue(value!);
         }
 
         /// <summary>
-        /// Invokes the delegate that returns Result<T>; returns a new result combining this and the invoked result (last value wins). On exception, preserves the exception by default.
+        /// Invokes the delegate that returns <see cref="Result{T}"/>; returns a new result combining this and the invoked result (last value wins). On exception, preserves the exception by default.
         /// </summary>
         public static async Task<Result<T>> InvokeResultAsync<T>(this Result<T> result, Func<Task<Result<T>>> func, bool keepException = true)
         {

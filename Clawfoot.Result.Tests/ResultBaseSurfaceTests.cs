@@ -28,7 +28,7 @@ public class ResultBaseSurfaceTests
     [Fact]
     public void Constructor_WithNullSuccessMessage_UsesDefaultMessage()
     {
-        var r = new Result((string)null);
+        var r = new Result((string?)null);
         ResultTestHarness.AssertSuccess(r, "Success");
     }
 
@@ -67,7 +67,7 @@ public class ResultBaseSurfaceTests
     [Fact]
     public void Constructor_WithNullErrors_UsesEmptyErrors()
     {
-        var r = new Result((IEnumerable<IError>)null, null, null);
+        var r = new Result((IEnumerable<IError>?)null, null, null);
         ResultTestHarness.AssertSuccess(r);
     }
 
@@ -108,15 +108,12 @@ public class ResultBaseSurfaceTests
     }
 
     [Fact]
-    public void AsT_ReturnsNewResultT_WithSameState_NoValue()
+    public void AsT_WhenSuccessful_Throws()
     {
+        // A successful Result<T> must carry a value, so a value-less success can't be converted
         var r = new Result(ResultTestHarness.SuccessMessage);
-        var typed = r.As<int>();
-        typed.ShouldNotBeNull();
-        typed.Success.ShouldBeTrue();
-        typed.Message.ShouldBe(ResultTestHarness.SuccessMessage);
-        typed.HasResult.ShouldBeFalse();
-        typed.Value.ShouldBe(default);
+        Should.Throw<InvalidOperationException>(() => r.As<int>())
+            .Message.ShouldContain("successful Result");
     }
 
     [Fact]
@@ -125,6 +122,24 @@ public class ResultBaseSurfaceTests
         var r = new Result(new[] { ResultTestHarness.SampleError }, null, null);
         var typed = r.As<string>();
         ResultTestHarness.AssertFailure(typed, 1, ResultTestHarness.ErrorMessage);
+        typed.HasResult.ShouldBeFalse();
+        typed.Value.ShouldBeNull();
+    }
+
+    [Fact]
+    public void SetResultT_WhenSuccessfulAndNull_Throws()
+    {
+        var r = new Result();
+        Should.Throw<ArgumentNullException>(() => r.SetResult<string>(null!));
+    }
+
+    [Fact]
+    public void SetResultT_WhenFailedAndNull_ReturnsFailureWithoutValue()
+    {
+        var r = Result.Error(ResultTestHarness.ErrorMessage);
+        var typed = r.SetResult<string>(null!);
+        ResultTestHarness.AssertFailure(typed, 1, ResultTestHarness.ErrorMessage);
+        typed.Value.ShouldBeNull();
     }
 
     [Fact]
@@ -201,7 +216,7 @@ public class ResultBaseSurfaceTests
     public void WithErrorIfNull_ReferenceType_WhenNull_AddsError()
     {
         var r = new Result();
-        string nil = null;
+        string? nil = null;
         var withErr = r.WithErrorIfNull(nil, ResultTestHarness.ErrorMessage);
         ResultTestHarness.AssertFailure(withErr, 1, ResultTestHarness.ErrorMessage);
     }
@@ -238,7 +253,7 @@ public class ResultBaseSurfaceTests
     public void WithErrorIfNullOrDefault_ReferenceType_WhenNull_AddsError()
     {
         var r = new Result();
-        string nil = null;
+        string? nil = null;
         var withErr = r.WithErrorIfNullOrDefault(nil, ResultTestHarness.ErrorMessage);
         ResultTestHarness.AssertFailure(withErr, 1, ResultTestHarness.ErrorMessage);
     }

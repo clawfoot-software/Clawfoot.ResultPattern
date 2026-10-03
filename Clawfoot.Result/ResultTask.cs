@@ -11,9 +11,9 @@ namespace Clawfoot.ResultPattern
     [AsyncMethodBuilder(typeof(ResultTaskMethodBuilder))]
     public class ResultTask
     {
-        internal TaskCompletionSource<object> Tcs { get; } = new TaskCompletionSource<object>();
-        
-        public Result Result { get; set; }
+        internal TaskCompletionSource<object?> Tcs { get; } = new TaskCompletionSource<object?>();
+
+        public Result? Result { get; set; }
         public Task Task { get; set; }
 
         public ResultTask()
@@ -47,7 +47,7 @@ namespace Clawfoot.ResultPattern
     public class ResultTaskMethodBuilder
     {
         private AsyncTaskMethodBuilder builder;
-        public ResultTask ResultTask { get; set; }
+        public ResultTask ResultTask { get; set; } = new ResultTask();
 
         public static ResultTaskMethodBuilder Create()
         {

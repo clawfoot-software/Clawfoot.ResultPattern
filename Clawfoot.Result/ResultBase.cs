@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Clawfoot.ResultPattern
@@ -25,24 +26,24 @@ namespace Clawfoot.ResultPattern
         /// Create a result
         /// </summary>
         /// <param name="successMessage">The default success message</param>
-        public ResultBase(string successMessage)
+        public ResultBase(string? successMessage)
         {
             _errors = Array.Empty<IError>();
             _exceptions = Array.Empty<Exception>();
-            _successMessage = !string.IsNullOrWhiteSpace(successMessage) ? successMessage : DEFAULT_SUCCESS_MESSAGE;
+            _successMessage = !string.IsNullOrWhiteSpace(successMessage) ? successMessage! : DEFAULT_SUCCESS_MESSAGE;
         }
 
         /// <summary>
         /// Create a result with initial errors and/or exceptions
         /// </summary>
         public ResultBase(
-            IEnumerable<IError> errors,
-            IEnumerable<Exception> exceptions = null,
-            string successMessage = null)
+            IEnumerable<IError>? errors,
+            IEnumerable<Exception>? exceptions = null,
+            string? successMessage = null)
         {
             _errors = errors?.ToArray() ?? Array.Empty<IError>();
             _exceptions = exceptions?.ToArray() ?? Array.Empty<Exception>();
-            _successMessage = !string.IsNullOrWhiteSpace(successMessage) ? successMessage : DEFAULT_SUCCESS_MESSAGE;
+            _successMessage = !string.IsNullOrWhiteSpace(successMessage) ? successMessage! : DEFAULT_SUCCESS_MESSAGE;
         }
 
         /// <summary>
@@ -115,32 +116,40 @@ namespace Clawfoot.ResultPattern
         /// <summary>
         /// Create a result
         /// </summary>
-        public AbstractResult(string successMessage) : base(successMessage) { }
+        public AbstractResult(string? successMessage) : base(successMessage) { }
 
         /// <summary>
         /// Create a result with initial errors and/or exceptions
         /// </summary>
         public AbstractResult(
-            IEnumerable<IError> errors,
-            IEnumerable<Exception> exceptions = null,
-            string successMessage = null)
+            IEnumerable<IError>? errors,
+            IEnumerable<Exception>? exceptions = null,
+            string? successMessage = null)
             : base(errors, exceptions, successMessage)
         { }
 
         /// <summary>
-        /// Converts this result into a <see cref="Result{T}"/> (same errors/exceptions, no value)
+        /// Converts this <b>failed</b> result into a <see cref="Result{T}"/> carrying the same errors/exceptions and no value.
+        /// Use this to propagate errors across result types.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// This result is successful. A successful <see cref="Result{T}"/> must carry a value, so a success cannot be
+        /// converted without one; use <see cref="SetResult{T}"/> or <see cref="Result.Ok{TResult}"/> instead.
+        /// </exception>
         public virtual Result<T> As<T>()
         {
+            if (Success)
+                throw Result<T>.SuccessWithoutValueException(this);
             return new Result<T>(_errors, _exceptions, _successMessage);
         }
 
         /// <summary>
         /// Returns a new <see cref="Result{T}"/> with this result's errors/exceptions and the given value
         /// </summary>
-        public Result<T> SetResult<T>(T value)
+        /// <exception cref="ArgumentNullException"><paramref name="value"/> is null and this result is successful</exception>
+        public Result<T> SetResult<T>([DisallowNull] T value)
         {
-            return new Result<T>(_errors, _exceptions, _successMessage, value);
+            return new Result<T>(_errors, _exceptions, _successMessage, value, value is not null);
         }
 
         /// <summary>
@@ -174,7 +183,7 @@ namespace Clawfoot.ResultPattern
         /// <summary>
         /// Returns a new result with additional errors
         /// </summary>
-        public TConcrete WithErrors(IEnumerable<IError> errors)
+        public TConcrete WithErrors(IEnumerable<IError>? errors)
         {
             var newErrors = _errors.Concat(errors ?? Array.Empty<IError>()).ToArray();
             return CreateWith(newErrors, _exceptions, _successMessage);
@@ -192,7 +201,7 @@ namespace Clawfoot.ResultPattern
         /// <summary>
         /// Returns a new result with an error if the value is null (reference types)
         /// </summary>
-        public TConcrete WithErrorIfNull<T>(T value, string message, string userMessage = "") where T : class
+        public TConcrete WithErrorIfNull<T>(T? value, string message, string userMessage = "") where T : class
         {
             if (value is null) return WithError(message, userMessage);
             return (TConcrete)this;
@@ -210,7 +219,7 @@ namespace Clawfoot.ResultPattern
         /// <summary>
         /// Returns a new result with an error if the value is null or default (reference types)
         /// </summary>
-        public TConcrete WithErrorIfNullOrDefault<T>(T value, string message, string userMessage = "") where T : class
+        public TConcrete WithErrorIfNullOrDefault<T>(T? value, string message, string userMessage = "") where T : class
         {
             if (value is null || value == default) return WithError(message, userMessage);
             return (TConcrete)this;

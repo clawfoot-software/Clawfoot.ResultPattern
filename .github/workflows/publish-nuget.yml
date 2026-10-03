@@ -53,6 +53,9 @@ jobs:
       - name: Restore
         run: dotnet restore ${{ env.PROJECT_PATH }}
 
+      - name: Test
+        run: dotnet test Clawfoot.ResultPattern.sln --configuration Release
+
       - name: Build
         run: |
           dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore -p:Version=${{ inputs.version }}
@@ -82,11 +85,8 @@ jobs:
 
       - name: Update version in csproj
         run: |
+          # AssemblyVersion/FileVersion are not set in the csproj; they derive from Version
           sed -i "s/<Version>.*<\/Version>/<Version>${{ inputs.version }}<\/Version>/" ${{ env.PROJECT_PATH }}
-          # Optionally align AssemblyVersion/FileVersion (uncomment if desired)
-          # VER_FOUR="${{ inputs.version }}.0"
-          # sed -i "s/<AssemblyVersion>.*<\/AssemblyVersion>/<AssemblyVersion>$VER_FOUR<\/AssemblyVersion>/" ${{ env.PROJECT_PATH }}
-          # sed -i "s/<FileVersion>.*<\/FileVersion>/<FileVersion>$VER_FOUR<\/FileVersion>/" ${{ env.PROJECT_PATH }}
 
       - name: Commit version bump and tag
         run: |

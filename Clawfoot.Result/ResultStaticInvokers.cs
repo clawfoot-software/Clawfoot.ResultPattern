@@ -97,18 +97,22 @@ namespace Clawfoot.ResultPattern
         /// <param name="func">The delegate</param>
         /// <param name="keepException">To keep the exception in the result, or just record the error message</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException">The delegate returned null</exception>
         public static Result<TResult> InvokeResult<TResult>(Func<TResult> func,
             bool keepException = false)
         {
+            TResult result;
             try
             {
-                TResult result = func.Invoke();
-                return Ok<TResult>(result);
+                result = func.Invoke();
             }
             catch (Exception ex)
             {
                 return Result.Error<TResult>(ex);
             }
+
+            // A null return is a contract violation (success must carry a value), not a captured failure
+            return new Result<TResult>(result!);
         }
 
         /// <summary>
@@ -118,18 +122,22 @@ namespace Clawfoot.ResultPattern
         /// <param name="func">The delegate</param>
         /// <param name="keepException">To keep the exception in the result, or just record the error message</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException">The delegate returned null</exception>
         public static async Task<Result<TResult>> InvokeResultAsync<TResult>(Func<Task<TResult>> func,
             bool keepException = false)
         {
+            TResult result;
             try
             {
-                TResult result = await func.Invoke();
-                return Ok<TResult>(result);
+                result = await func.Invoke();
             }
             catch (Exception ex)
             {
                 return Result.Error<TResult>(ex);
             }
+
+            // A null return is a contract violation (success must carry a value), not a captured failure
+            return new Result<TResult>(result!);
         }
 
         /// <summary>

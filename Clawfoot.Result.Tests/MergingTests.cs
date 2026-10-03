@@ -26,6 +26,19 @@ public class MergingTests
     }
 
     [Fact]
+    public void Combine_SuccessfulResult_With_ResultT_KeepsTypedValue()
+    {
+        // Must bind to Combine<T>(Result, Result<T>), not convert the successful Result to Result<T> (which throws)
+        Result validation = Result.Ok();
+        Result<int> typed = new Result<int>(TEST_VALUE);
+
+        Result<int> merged = Result.Combine(validation, typed);
+
+        merged.Success.ShouldBeTrue();
+        merged.Value.ShouldBe(TEST_VALUE);
+    }
+
+    [Fact]
     public void Combine_ResultT_With_ResultT_ReturnsNewResultWithCombinedErrors()
     {
         Result<int> result = new Result<int>(TEST_VALUE);
@@ -46,7 +59,7 @@ public class MergingTests
     public void Combine_Result_With_ResultT_ReturnsNewResultWithCombinedErrors()
     {
         Result result = Result.Error(ERROR_MESSAGE);
-        Result<int> resultObj = new Result<int>();
+        Result<int> resultObj = new Result<int>(TEST_VALUE);
 
         Result merged = Result.Combine(new ResultBase[] { result, resultObj });
 
@@ -60,7 +73,7 @@ public class MergingTests
     [Fact]
     public void Combine_ResultBaseArray_CombinesWithoutCallingAsT()
     {
-        Result<int> result = new Result<int>();
+        Result<int> result = new Result<int>(TEST_VALUE);
         Result result2 = A.Fake<Result>();
 
         Result merged = Result.Combine(new ResultBase[] { result, result2 });

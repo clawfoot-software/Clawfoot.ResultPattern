@@ -10,12 +10,16 @@ namespace Clawfoot.ResultPattern.Tests;
 public class ResultGenericSurfaceTests
 {
     [Fact]
-    public void DefaultConstructor_NoValue_HasResultFalse()
+    public void Constructor_WithNullValue_Throws()
     {
-        var r = new Result<int>();
-        r.Success.ShouldBeTrue();
-        r.HasResult.ShouldBeFalse();
-        r.Value.ShouldBe(0);
+        Should.Throw<ArgumentNullException>(() => new Result<string>((string)null!));
+    }
+
+    [Fact]
+    public void Constructor_WithEmptyErrors_Throws()
+    {
+        // No value and no errors would be a value-less success
+        Should.Throw<ArgumentException>(() => new Result<int>(Array.Empty<IError>()));
     }
 
     [Fact]
@@ -91,12 +95,42 @@ public class ResultGenericSurfaceTests
     }
 
     [Fact]
-    public void Implicit_FromResult_ToResultT()
+    public void Implicit_FromSuccessfulResult_ToResultT_Throws()
     {
         Result r = Result.Ok();
-        Result<int> typed = r;
-        typed.Success.ShouldBeTrue();
+        Should.Throw<InvalidOperationException>(() =>
+        {
+            Result<int> typed = r;
+            return typed;
+        });
+    }
+
+    [Fact]
+    public void Implicit_FromFailedResult_ToResultT_PropagatesErrors()
+    {
+        Result r = Result.Error(ResultTestHarness.ErrorMessage);
+        Result<string> typed = r;
+        ResultTestHarness.AssertFailure(typed, 1, ResultTestHarness.ErrorMessage);
         typed.HasResult.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Implicit_FromNullResult_ToResultT_IsNull()
+    {
+        Result? r = null;
+        Result<int>? typed = r;
+        typed.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Implicit_FromNullValue_Throws()
+    {
+        string? value = null;
+        Should.Throw<ArgumentNullException>(() =>
+        {
+            Result<string> typed = value!;
+            return typed;
+        });
     }
 
     [Fact]
@@ -140,11 +174,39 @@ public class ResultGenericSurfaceTests
     }
 
     [Fact]
-    public void Combine_ResultT_IEnumerable_WhenNull_ReturnsNewEmptyResultT()
+    public void Combine_ResultT_IEnumerable_WhenNull_Throws()
     {
-        var combined = Result.Combine<int>(null);
+        Should.Throw<ArgumentNullException>(() => Result.Combine<int>((IEnumerable<Result<int>>)null!));
+    }
+
+    [Fact]
+    public void Combine_ResultT_IEnumerable_WhenEmpty_Throws()
+    {
+        // Nothing to take a value from
+        Should.Throw<ArgumentException>(() => Result.Combine<int>(Enumerable.Empty<Result<int>>()));
+    }
+
+    [Fact]
+    public void Combine_ResultT_KeepsDefaultValues()
+    {
+        var combined = Result.Combine(new Result<bool>(true), new Result<bool>(false));
         combined.Success.ShouldBeTrue();
+        combined.Value.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Combine_ResultT_AllFailed_NoValue()
+    {
+        var combined = Result.Combine(Result.Error<string>("E1"), Result.Error<string>("E2"));
+        ResultTestHarness.AssertFailure(combined, 2, "E1");
         combined.HasResult.ShouldBeFalse();
+        combined.Value.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Combine_ResultBase_And_ResultT_WhenTypedNull_Throws()
+    {
+        Should.Throw<ArgumentNullException>(() => Result.Combine<int>(Result.Ok(), null!));
     }
 
     [Fact]
@@ -160,7 +222,7 @@ public class ResultGenericSurfaceTests
     [Fact]
     public void Combine_ResultBase_And_ResultT_WhenBaseNull_ValueFromTyped()
     {
-        ResultBase baseResult = null;
+        ResultBase? baseResult = null;
         var typed = new Result<int>(ResultTestHarness.SampleValue);
         var combined = Result.Combine<int>(baseResult, typed);
         combined.Success.ShouldBeTrue();
@@ -189,18 +251,65 @@ public class ResultGenericSurfaceTests
     }
 
     [Fact]
-    public void HasResult_WhenSuccessAndValueTypeDefault_False()
+    public void HasResult_WhenSuccessAndValueTypeDefault_True()
     {
-        var r = new Result<int>(0);
-        r.Success.ShouldBeTrue();
+        // 0 and false are values, not "no value"
+        new Result<int>(0).HasResult.ShouldBeTrue();
+        new Result<bool>(false).HasResult.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void HasResult_WhenFailedWithValue_False()
+    {
+        var r = new Result<int>(ResultTestHarness.SampleValue).WithError(ResultTestHarness.ErrorMessage);
         r.HasResult.ShouldBeFalse();
     }
 
     [Fact]
-    public void HasResult_WhenSuccessAndReferenceTypeNull_False()
+    public void WithError_PreservesValue()
     {
-        var r = new Result<string>((string)null);
-        r.Success.ShouldBeTrue();
-        r.HasResult.ShouldBeFalse();
+        var r = new Result<int>(ResultTestHarness.SampleValue);
+        var withErr = r.WithError(ResultTestHarness.ErrorMessage);
+        withErr.Value.ShouldBe(ResultTestHarness.SampleValue);
+    }
+
+    [Fact]
+    public void WithErrors_Empty_KeepsSuccessAndValue()
+    {
+        // Previously dropped the value, producing a success without one
+        var r = new Result<string>("value");
+        var same = r.WithErrors(Array.Empty<IError>());
+        same.Success.ShouldBeTrue();
+        same.Value.ShouldBe("value");
+    }
+
+    [Fact]
+    public void WithValue_WhenSuccessfulAndNull_Throws()
+    {
+        var r = new Result<string>("value");
+        Should.Throw<ArgumentNullException>(() => r.WithValue(null!));
+    }
+
+    [Fact]
+    public void To_WhenSuccessfulAndNull_Throws()
+    {
+        var r = new Result<int>(ResultTestHarness.SampleValue);
+        Should.Throw<ArgumentNullException>(() => r.To<string>(null!));
+    }
+
+    [Fact]
+    public void AsOtherT_WhenSuccessful_Throws()
+    {
+        // Converting would drop the value
+        var r = new Result<int>(ResultTestHarness.SampleValue);
+        Should.Throw<InvalidOperationException>(() => r.As<string>());
+    }
+
+    [Fact]
+    public void AsOtherT_WhenFailed_PropagatesErrors()
+    {
+        var r = Result.Error<int>(ResultTestHarness.ErrorMessage);
+        var other = r.As<string>();
+        ResultTestHarness.AssertFailure(other, 1, ResultTestHarness.ErrorMessage);
     }
 }

@@ -119,7 +119,7 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Invokes the delegate that returns Result<TResult>; returns a new Result<TResult> combining this result's errors with the invoked result (value from invoked).
+        /// Invokes the delegate that returns <see cref="Result{T}"/>; returns a new <see cref="Result{T}"/> combining this result's errors with the invoked result (value from invoked).
         /// </summary>
         public static Result<TResult> InvokeResult<TResult, TResultType>(this TResultType result, Func<Result<TResult>> func, bool keepException = true)
             where TResultType : AbstractResult<TResultType>
@@ -136,7 +136,7 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Invokes the delegate that returns Result<TResult>; returns a new Result<TResult> combining this result's errors with the invoked result (value from invoked).
+        /// Invokes the delegate that returns <see cref="Result{T}"/>; returns a new <see cref="Result{T}"/> combining this result's errors with the invoked result (value from invoked).
         /// </summary>
         public static async Task<Result<TResult>> InvokeResultAsync<TResult, TResultType>(this TResultType result,
             Func<Task<Result<TResult>>> func,
@@ -155,39 +155,46 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Invokes the delegate; on success returns a new Result<TResult> with the value. On exception returns a result with the error (exception preserved by default).
+        /// Invokes the delegate; on success returns a new <see cref="Result{T}"/> with the value. On exception returns a result with the error (exception preserved by default).
         /// </summary>
+        /// <exception cref="ArgumentNullException">The delegate returned null and <paramref name="result"/> is successful</exception>
         public static Result<TResult> InvokeResult<TResult, TResultType>(this TResultType result, Func<TResult> func, bool keepException = true)
             where TResultType : AbstractResult<TResultType>
         {
+            TResult value;
             try
             {
-                TResult value = func.Invoke();
-                return result.SetResult(value);
+                value = func.Invoke();
             }
             catch (Exception ex)
             {
                 return Result.Error<TResult>(ex);
             }
+
+            // SetResult enforces the non-null contract at runtime
+            return result.SetResult(value!);
         }
 
         /// <summary>
-        /// Invokes the delegate; on success returns a new Result<TResult> with the value. On exception returns a result with the error (exception preserved by default).
+        /// Invokes the delegate; on success returns a new <see cref="Result{T}"/> with the value. On exception returns a result with the error (exception preserved by default).
         /// </summary>
         public static async Task<Result<TResult>> InvokeResultAsync<TResult, TResultType>(this TResultType result,
             Func<Task<TResult>> func,
             bool keepException = true)
             where TResultType : AbstractResult<TResultType>
         {
+            TResult value;
             try
             {
-                TResult value = await func.Invoke();
-                return result.SetResult(value);
+                value = await func.Invoke();
             }
             catch (Exception ex)
             {
                 return Result.Error<TResult>(ex);
             }
+
+            // SetResult enforces the non-null contract at runtime
+            return result.SetResult(value!);
         }
     }
 }

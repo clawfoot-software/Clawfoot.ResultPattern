@@ -20,7 +20,7 @@ public class GenericInvokeExtensionsTests
     [Fact]
     public void Result_WithResult_Ensure_NoAmbiguousInvoke()
     {
-        Result<int> result = new Result<int>();
+        Result<int> result = new Result<int>(0);
 
         Result<int> combined = result.InvokeResult(() => DoThingResult());
         int resultValue = combined.Value;
@@ -31,7 +31,7 @@ public class GenericInvokeExtensionsTests
     [Fact]
     public void IResult_WithResult_Ensure_NoAmbiguousInvoke()
     {
-        Result<int> result = new Result<int>();
+        Result<int> result = new Result<int>(0);
 
         Result<int> combined = result.InvokeResult(() => DoThingIResult());
         int resultValue = combined.Value;
@@ -42,7 +42,7 @@ public class GenericInvokeExtensionsTests
     [Fact]
     public void ResultT_Invoke()
     {
-        var result = new Result<int>();
+        var result = new Result<int>(0);
 
         Result<int> combined = result.InvokeResult(() => DoThingIResult());
         (Result r, int resultValue) = combined;

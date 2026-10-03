@@ -12,14 +12,14 @@ public class ResultCastingTests
     }
 
     [Fact]
-    public void WithResult_AsGeneric_ReturnsGenericResult()
+    public void WithFailedResult_AsGeneric_ReturnsFailedGenericResult()
     {
-        Result result = new Result();
+        Result result = Result.Error("e");
 
         Result<int> converted = result.As<int>();
 
-        converted.Success.ShouldBeTrue();
-        result.Success.ShouldBeTrue();
+        converted.HasErrors.ShouldBeTrue();
+        converted.HasResult.ShouldBeFalse();
     }
 
     [Fact]

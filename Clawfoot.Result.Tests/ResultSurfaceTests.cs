@@ -28,7 +28,7 @@ public class ResultSurfaceTests
     [Fact]
     public void Result_CopyConstructor_FromNull_ProducesEmptyResult()
     {
-        var r = new Result((ResultBase)null);
+        var r = new Result((ResultBase?)null);
         ResultTestHarness.AssertSuccess(r);
         r.Errors.ShouldBeEmpty();
         r.Exceptions.ShouldBeEmpty();
@@ -151,7 +151,7 @@ public class ResultSurfaceTests
     [Fact]
     public void Combine_IEnumerable_WhenNull_ReturnsNewEmptyResult()
     {
-        IEnumerable<Result> nullEnumerable = null;
+        IEnumerable<Result>? nullEnumerable = null;
         var combined = Result.Combine(nullEnumerable);
         ResultTestHarness.AssertSuccess(combined);
     }
@@ -175,7 +175,7 @@ public class ResultSurfaceTests
     [Fact]
     public void Combine_ResultBaseParams_WhenNull_ReturnsNewEmptyResult()
     {
-        var combined = Result.Combine((ResultBase[])null);
+        var combined = Result.Combine((ResultBase[]?)null);
         ResultTestHarness.AssertSuccess(combined);
     }
 
@@ -223,7 +223,7 @@ public class ResultSurfaceTests
     [Fact]
     public void ImplicitBool_WhenNull_False()
     {
-        Result r = null;
+        Result? r = null;
         bool b = r;
         b.ShouldBeFalse();
     }

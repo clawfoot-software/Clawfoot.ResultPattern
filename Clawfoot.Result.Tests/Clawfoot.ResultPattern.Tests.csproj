@@ -4,6 +4,8 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <!-- Flow tests rely on the compiler: a regression in the library's nullable annotations must fail the build. -->
+        <WarningsAsErrors>nullable</WarningsAsErrors>
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
@@ -28,11 +30,9 @@
     <ItemGroup>
       <ProjectReference Include="..\Clawfoot.Result\Clawfoot.ResultPattern.csproj" />
       <!-- Direct analyzer reference so the analyzer runs in this project (and in the IDE). -->
-      <ProjectReference Include="..\Clawfoot.Result.Analyzers\Clawfoot.Result.Analyzers.csproj">
-        <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>analyzers; build</IncludeAssets>
-        <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      </ProjectReference>
+      <ProjectReference Include="..\Clawfoot.Result.Analyzers\Clawfoot.Result.Analyzers.csproj"
+                        OutputItemType="Analyzer"
+                        ReferenceOutputAssembly="false" />
     </ItemGroup>
 
 </Project>

@@ -15,19 +15,19 @@ namespace Clawfoot.ResultPattern
         public ErrorAttribute() { }
 
         public int Code { get; set; }
-        public string GroupName { get; set; }
-        public string Message { get; set; }
-        public string UserMessage { get; set; }
+        public string? GroupName { get; set; }
+        public string? Message { get; set; }
+        public string? UserMessage { get; set; }
 
-        public string MemberName { get; set; }
+        public string? MemberName { get; set; }
 
         /// <summary>
         /// Formats the error message for this error
         /// If there are no values, returns an unformatted message
         /// </summary>
-        public string GetFormattedMessage(params string[] values)
+        public string? GetFormattedMessage(params string[]? values)
         {
-            if(values is null || values.Length == 0)
+            if(Message is null || values is null || values.Length == 0)
             {
                 return Message;
             }
@@ -40,9 +40,9 @@ namespace Clawfoot.ResultPattern
         /// If no <see cref="UserMessage"/> exists, than the <see cref="Message"/> will be returned
         /// If there are no values, returns an unformatted message
         /// </summary>
-        public string GetFormattedUserMessage(params string[] values)
+        public string? GetFormattedUserMessage(params string[]? values)
         {
-            string message;
+            string? message;
 
             if (String.IsNullOrEmpty(UserMessage))
             {
@@ -54,7 +54,7 @@ namespace Clawfoot.ResultPattern
             }
 
 
-            if (values is null || values.Length == 0)
+            if (message is null || values is null || values.Length == 0)
             {
                 return message;
             }
