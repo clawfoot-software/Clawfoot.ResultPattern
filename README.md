@@ -214,7 +214,7 @@ service project).
 | `CFRESULT003` | **Error** | A known-successful `Result` (`Result.Ok()`, `new Result()`) converted to `Result<T>` (implicitly, by cast, or with `As<T>()`) |
 | `CFRESULT004` | Warning | `Result<X?>`: a nullable type argument can't represent "no value"; use `(Result, X?)` |
 | `CFRESULT005` | Off (opt-in) | An error created without a kind: `new Error(...)`, `Result.Error(message)`, `WithError(message)`, `WithErrorIf*` without a kind, a `null` kind, `[Error]` on an enum member without `Kind`, or an `IError` implementation without a `Kind` property |
-| `CFRESULT006` | Warning | A decision made on error text: `IError.Message`, `UserMessage`, `ToString()`, `ToUserString()` or a result's `ToString()` compared with `==`/`!=`, `Equals`, `Contains`, `StartsWith`, `EndsWith`, `IndexOf`, `Regex.IsMatch`, or matched in a `switch` or `is` pattern. Logging, formatting and displaying the text is fine |
+| `CFRESULT006` | Warning | A decision made on error text: `IError.Message`, `UserMessage`, `ToString()`, `ToUserString()` or a result's `ToString()`/`ToUserFriendlyString()` compared with `==`/`!=`, `Equals`, `Contains`, `StartsWith`, `EndsWith`, `IndexOf`, `Regex.IsMatch`, or matched in a `switch` or `is` pattern. Logging, formatting and displaying the text is fine |
 | `CFRESULT007` | **Error** | `[Error(Kind = ...)]` set to something other than an enum value, e.g. `Kind = 404` (`Error.From` would throw) |
 
 Raise or lower severities in `.editorconfig`:
