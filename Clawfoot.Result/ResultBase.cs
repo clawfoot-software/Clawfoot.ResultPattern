@@ -85,6 +85,51 @@ namespace Clawfoot.ResultPattern
                 : $"Failed with {_errors.Count} error(s)";
 
         /// <summary>
+        /// The kind of the first error that has one, or null when no error has a kind
+        /// </summary>
+        public Enum? GetErrorKind()
+        {
+            foreach (var error in _errors)
+            {
+                if (error.Kind is not null)
+                    return error.Kind;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the kind of the first error whose kind is a <typeparamref name="TKind"/>.
+        /// Errors with other kinds, or none, are skipped.
+        /// </summary>
+        /// <returns>True when an error with a <typeparamref name="TKind"/> kind was found</returns>
+        public bool TryGetErrorKind<TKind>(out TKind kind) where TKind : struct, Enum
+        {
+            foreach (var error in _errors)
+            {
+                if (error.Kind is TKind match)
+                {
+                    kind = match;
+                    return true;
+                }
+            }
+            kind = default;
+            return false;
+        }
+
+        /// <summary>
+        /// True when any error has the given kind. Both the enum type and the value must match.
+        /// </summary>
+        public bool HasErrorKind(Enum kind)
+        {
+            foreach (var error in _errors)
+            {
+                if (Equals(error.Kind, kind))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Combines all error messages into a single string
         /// </summary>
         public string ToString(string seperator = "\n")
@@ -153,11 +198,20 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Returns a new result with an additional exception (and its message as error)
+        /// Returns a new result with an additional exception (and its message as error).
+        /// The error's kind is <see cref="ErrorKind.InternalServerError"/>.
         /// </summary>
         public TConcrete WithException(Exception ex)
         {
-            var errors = _errors.Concat(new[] { new Error(ex.Message) }).ToArray();
+            return WithException(ex, ErrorKind.InternalServerError);
+        }
+
+        /// <summary>
+        /// Returns a new result with an additional exception (and its message as error with the given kind)
+        /// </summary>
+        public TConcrete WithException(Exception ex, Enum? kind)
+        {
+            var errors = _errors.Concat(new[] { Error.FromException(ex, kind) }).ToArray();
             var exceptions = _exceptions.Concat(new[] { ex }).ToArray();
             return CreateWith(errors, exceptions, _successMessage);
         }
@@ -167,7 +221,15 @@ namespace Clawfoot.ResultPattern
         /// </summary>
         public TConcrete WithError(string message, string userMessage = "")
         {
-            var errors = _errors.Concat(new[] { (IError)new Error(message, userMessage) }).ToArray();
+            return WithError(message, (Enum?)null, userMessage);
+        }
+
+        /// <summary>
+        /// Returns a new result with an additional error of the given kind
+        /// </summary>
+        public TConcrete WithError(string message, Enum? kind, string userMessage = "")
+        {
+            var errors = _errors.Concat(new[] { (IError)new Error(message, kind, userMessage) }).ToArray();
             return CreateWith(errors, _exceptions, _successMessage);
         }
 
@@ -194,8 +256,16 @@ namespace Clawfoot.ResultPattern
         /// </summary>
         public TConcrete WithErrorIf(bool condition, string message, string userMessage = "")
         {
+            return WithErrorIf(condition, message, (Enum?)null, userMessage);
+        }
+
+        /// <summary>
+        /// Returns a new result with an error of the given kind if the condition is true
+        /// </summary>
+        public TConcrete WithErrorIf(bool condition, string message, Enum? kind, string userMessage = "")
+        {
             if (!condition) return (TConcrete)this;
-            return WithError(message, userMessage);
+            return WithError(message, kind, userMessage);
         }
 
         /// <summary>
@@ -203,7 +273,15 @@ namespace Clawfoot.ResultPattern
         /// </summary>
         public TConcrete WithErrorIfNull<T>(T? value, string message, string userMessage = "") where T : class
         {
-            if (value is null) return WithError(message, userMessage);
+            return WithErrorIfNull(value, message, (Enum?)null, userMessage);
+        }
+
+        /// <summary>
+        /// Returns a new result with an error of the given kind if the value is null (reference types)
+        /// </summary>
+        public TConcrete WithErrorIfNull<T>(T? value, string message, Enum? kind, string userMessage = "") where T : class
+        {
+            if (value is null) return WithError(message, kind, userMessage);
             return (TConcrete)this;
         }
 
@@ -212,7 +290,15 @@ namespace Clawfoot.ResultPattern
         /// </summary>
         public TConcrete WithErrorIfNull<T>(T? value, string message, string userMessage = "") where T : struct
         {
-            if (value is null) return WithError(message, userMessage);
+            return WithErrorIfNull(value, message, (Enum?)null, userMessage);
+        }
+
+        /// <summary>
+        /// Returns a new result with an error of the given kind if the nullable value is null
+        /// </summary>
+        public TConcrete WithErrorIfNull<T>(T? value, string message, Enum? kind, string userMessage = "") where T : struct
+        {
+            if (value is null) return WithError(message, kind, userMessage);
             return (TConcrete)this;
         }
 
@@ -221,7 +307,15 @@ namespace Clawfoot.ResultPattern
         /// </summary>
         public TConcrete WithErrorIfNullOrDefault<T>(T? value, string message, string userMessage = "") where T : class
         {
-            if (value is null || value == default) return WithError(message, userMessage);
+            return WithErrorIfNullOrDefault(value, message, (Enum?)null, userMessage);
+        }
+
+        /// <summary>
+        /// Returns a new result with an error of the given kind if the value is null or default (reference types)
+        /// </summary>
+        public TConcrete WithErrorIfNullOrDefault<T>(T? value, string message, Enum? kind, string userMessage = "") where T : class
+        {
+            if (value is null || value == default) return WithError(message, kind, userMessage);
             return (TConcrete)this;
         }
 
@@ -230,7 +324,15 @@ namespace Clawfoot.ResultPattern
         /// </summary>
         public TConcrete WithErrorIfNullOrDefault<T>(T? value, string message, string userMessage = "") where T : struct
         {
-            if (value is null || value.Value.Equals(default(T))) return WithError(message, userMessage);
+            return WithErrorIfNullOrDefault(value, message, (Enum?)null, userMessage);
+        }
+
+        /// <summary>
+        /// Returns a new result with an error of the given kind if the nullable value is null or default
+        /// </summary>
+        public TConcrete WithErrorIfNullOrDefault<T>(T? value, string message, Enum? kind, string userMessage = "") where T : struct
+        {
+            if (value is null || value.Value.Equals(default(T))) return WithError(message, kind, userMessage);
             return (TConcrete)this;
         }
 

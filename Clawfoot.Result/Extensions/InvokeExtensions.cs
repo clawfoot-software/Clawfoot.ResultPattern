@@ -8,7 +8,9 @@ namespace Clawfoot.ResultPattern
         private static TResultType HandleInvokeException<TResultType>(TResultType result, Exception ex, bool keepException)
             where TResultType : AbstractResult<TResultType>
         {
-            return keepException ? (TResultType)result.WithException(ex) : (TResultType)result.WithError(ex.Message);
+            return keepException
+                ? (TResultType)result.WithException(ex)
+                : (TResultType)result.WithError(ex.Message, ErrorKind.InternalServerError);
         }
 
         /// <summary>

@@ -43,12 +43,16 @@ internal static class CompilationHarness
     /// <summary>
     /// Diagnostics reported by <paramref name="analyzer"/>. Fails if the snippet itself doesn't compile.
     /// </summary>
-    public static async Task<ImmutableArray<Diagnostic>> AnalyzeAsync(DiagnosticAnalyzer analyzer, string source)
+    /// <param name="enable">Rule IDs to turn on as warnings, as a consumer would in .editorconfig (for rules disabled by default)</param>
+    public static async Task<ImmutableArray<Diagnostic>> AnalyzeAsync(DiagnosticAnalyzer analyzer, string source, params string[] enable)
     {
         var compilation = CreateCompilation(source);
         compilation.GetDiagnostics()
             .Where(d => d.Severity == DiagnosticSeverity.Error)
             .ShouldBeEmpty("the test snippet must compile");
+
+        compilation = compilation.WithOptions(compilation.Options.WithSpecificDiagnosticOptions(
+            enable.Select(id => KeyValuePair.Create(id, ReportDiagnostic.Warn))));
 
         return await compilation
             .WithAnalyzers(ImmutableArray.Create(analyzer))

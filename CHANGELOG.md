@@ -1,5 +1,37 @@
 # Changelog
 
+## 4.1.0 (unreleased)
+
+Errors can carry a **kind**: an enum value for handling errors centrally, e.g. in one `switch`. Any enum works, so
+applications can define their own kinds; a built-in `ErrorKind` covers the HTTP 4xx/5xx status codes.
+
+### Added
+
+- `IError.Kind` (`Enum?`). It's a default interface member returning null, so existing `IError` implementations keep compiling.
+- `ErrorKind`: built-in kinds for the HTTP 4xx and 5xx status codes. Each value is its status code and names match
+  `System.Net.HttpStatusCode`.
+- `Error.Kind`, and a constructor that takes it: `new Error(message, kind, userMessage, code, groupName, memberName)`.
+- `[Error(Kind = ...)]`: `Error.From` / `Result.FromError` copy it onto the error. A non-enum value throws `InvalidOperationException`.
+- Kind overloads: `Result.Error(message, kind, ...)`, `Result.Error<T>(message, kind, ...)`, `WithError(message, kind, ...)`,
+  `WithErrorIf` / `WithErrorIfNull` / `WithErrorIfNullOrDefault(..., message, kind, ...)`, `WithException(ex, kind)`,
+  `Result.Error(ex, kind)`, `Result.Error<T>(ex, kind)`.
+- On results: `GetErrorKind()` (first error with a kind), `TryGetErrorKind<TKind>(out kind)` (first kind of that enum
+  type), `HasErrorKind(kind)` (any error with that kind; type and value must match).
+- `ErrorKindJsonConverter` for System.Text.Json. Kinds are written as `"TypeName.Member"` with no setup; register your
+  enum types to read them back. Unknown kinds throw `JsonException` unless `ignoreUnknownKinds: true`.
+  `Error` now deserializes (its kind constructor is the `[JsonConstructor]`).
+- Analyzer `CFRESULT005` (disabled by default): reports errors created without a kind. Enable it with
+  `dotnet_diagnostic.CFRESULT005.severity = warning`.
+
+### Changed
+
+- Errors created from exceptions (`Result.Error(ex)`, `WithException(ex)`, and exceptions caught by `Invoke*` /
+  `InvokeResult*`, including with `keepException: false`) have kind `ErrorKind.InternalServerError`.
+- The package now depends on `System.Text.Json` (provided by the framework on .NET 5+).
+- `new Error("message", null)` no longer compiles: `null` matches both the `userMessage` and the `kind` constructor.
+  Name the argument (`userMessage: null`) or pass `""`. `Result.Error("message", null)` and `WithError("message", null)`
+  still bind to the message-only overloads.
+
 ## 4.0.0
 
 A successful `Result<T>` now always carries a non-null value, and the library is fully annotated for nullable

@@ -18,7 +18,7 @@ namespace Clawfoot.ResultPattern
             }
             catch (Exception ex)
             {
-                return keepException ? (Result<T>)result.WithException(ex) : (Result<T>)result.WithError(ex.Message);
+                return keepException ? result.WithException(ex) : result.WithError(ex.Message, ErrorKind.InternalServerError);
             }
 
             // WithValue enforces the non-null contract at runtime
@@ -37,7 +37,7 @@ namespace Clawfoot.ResultPattern
             }
             catch (Exception ex)
             {
-                return keepException ? (Result<T>)result.WithException(ex) : (Result<T>)result.WithError(ex.Message);
+                return keepException ? result.WithException(ex) : result.WithError(ex.Message, ErrorKind.InternalServerError);
             }
         }
 
@@ -54,7 +54,7 @@ namespace Clawfoot.ResultPattern
             }
             catch (Exception ex)
             {
-                return keepException ? (Result<T>)result.WithException(ex) : (Result<T>)result.WithError(ex.Message);
+                return keepException ? result.WithException(ex) : result.WithError(ex.Message, ErrorKind.InternalServerError);
             }
 
             // WithValue enforces the non-null contract at runtime
@@ -73,7 +73,7 @@ namespace Clawfoot.ResultPattern
             }
             catch (Exception ex)
             {
-                return keepException ? (Result<T>)result.WithException(ex) : (Result<T>)result.WithError(ex.Message);
+                return keepException ? result.WithException(ex) : result.WithError(ex.Message, ErrorKind.InternalServerError);
             }
         }
     }
