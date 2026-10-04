@@ -106,4 +106,27 @@ public class CompilerFlowTests
             static string M() { var (result, p) = Lookup.Load(); return p.Name; }
             """).ShouldBe(new[] { "CS8602" });
     }
+
+    // Documented 4.1 source break: both Error constructors need default arguments, so neither is better
+    [Fact]
+    public void ErrorConstructor_NullSecondArgument_IsAmbiguous()
+    {
+        Warnings("static IError M() => new Error(\"m\", null);").ShouldContain("CS0121");
+    }
+
+    // The message-only overloads take every argument without defaults, so they win over the kind overloads
+    [Theory]
+    [InlineData("static Result M() => Result.Error(\"m\", null);")]
+    [InlineData("static Result M() => Result.Ok().WithError(\"m\", null);")]
+    [InlineData("static Result M() => Result.Ok().WithErrorIf(true, \"m\", null);")]
+    [InlineData("static Result M() => Result.Error(\"m\", \"user\");")]
+    [InlineData("static Result M() => Result.Error(\"m\", (string?)null);")]
+    [InlineData("static Result M() => Result.Error(\"m\", ErrorKind.NotFound);")]
+    [InlineData("static Result M() => Result.Error(\"m\", kind: null);")]
+    [InlineData("static Result M(Exception ex) => Result.Error(ex, null);")]
+    [InlineData("static IError M() => new Error(\"m\", userMessage: null);")]
+    public void TypedOrNamedSecondArgument_Binds(string body)
+    {
+        Warnings(body).ShouldNotContain("CS0121");
+    }
 }

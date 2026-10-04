@@ -16,8 +16,12 @@ public class AnalyzerTests
         }
         """;
 
-    private static async Task<string[]> Report(DiagnosticAnalyzer analyzer, string body) =>
-        (await CompilationHarness.AnalyzeAsync(analyzer, Types + "\npublic static class Consumer {\n" + body + "\n}")).Ids();
+    private static async Task<string[]> Report(DiagnosticAnalyzer analyzer, string body, params string[] enable) =>
+        (await CompilationHarness.AnalyzeAsync(analyzer, Types + "\npublic static class Consumer {\n" + body + "\n}", enable)).Ids();
+
+    // For rules that declare types: the snippet is compiled as-is, outside the Consumer class
+    private static async Task<string[]> ReportDeclarations(DiagnosticAnalyzer analyzer, string declarations, params string[] enable) =>
+        (await CompilationHarness.AnalyzeAsync(analyzer, Types + "\n" + declarations, enable)).Ids();
 
     public class CFRESULT001_DiscardedResult
     {
@@ -125,6 +129,125 @@ public class AnalyzerTests
         public async Task OtherTypes_DoNotReport(string body)
         {
             (await Report(Analyzer, body)).ShouldBeEmpty();
+        }
+    }
+
+    public class CFRESULT005_ErrorWithoutKind
+    {
+        private static readonly ErrorWithoutKindAnalyzer Analyzer = new();
+        private const string Id = ErrorWithoutKindAnalyzer.DiagnosticId;
+
+        private const string Kinds = """
+            public enum AppErrorKind { NotFound, Conflict }
+            """;
+
+        [Theory]
+        [InlineData("static IError M() => new Error(\"x\");")]
+        [InlineData("static IError M() => new Error(\"x\", \"user\", 5);")]
+        [InlineData("static IError M() => new Error();")]
+        [InlineData("static IError M() => new Error(\"x\", kind: null);")]
+        [InlineData("static Result M() => Result.Error(\"x\");")]
+        [InlineData("static Result<Principal> M() => Result.Error<Principal>(\"x\", \"user\");")]
+        [InlineData("static Result M() => Result.Error(\"x\", (Enum?)null);")]
+        [InlineData("static Result M() => Result.Ok().WithError(\"x\");")]
+        [InlineData("static Result<Principal> M(Result<Principal> r) => r.WithError(\"x\");")]
+        [InlineData("static Result M(bool b) => Result.Ok().WithErrorIf(b, \"x\");")]
+        [InlineData("static Result M(Principal? p) => Result.Ok().WithErrorIfNull(p, \"x\");")]
+        [InlineData("static Result M(int? i) => Result.Ok().WithErrorIfNullOrDefault(i, \"x\");")]
+        [InlineData("static Result M(Exception ex) => Result.Ok().WithException(ex, null);")]
+        [InlineData("static Result M(Exception ex) => Result.Error(ex, default(Enum));")]
+        public async Task KindlessError_Reports(string body)
+        {
+            (await Report(Analyzer, Kinds + "\n" + body, Id)).ShouldBe(new[] { Id });
+        }
+
+        [Theory]
+        [InlineData("static IError M() => new Error(\"x\", AppErrorKind.NotFound);")]
+        [InlineData("static IError M() => new Error(\"x\", kind: ErrorKind.NotFound, userMessage: \"u\");")]
+        [InlineData("static Result M() => Result.Error(\"x\", AppErrorKind.Conflict);")]
+        [InlineData("static Result<Principal> M() => Result.Error<Principal>(\"x\", ErrorKind.BadRequest, \"user\");")]
+        [InlineData("static Result M() => Result.Ok().WithError(\"x\", AppErrorKind.NotFound);")]
+        [InlineData("static Result M(bool b) => Result.Ok().WithErrorIf(b, \"x\", AppErrorKind.Conflict);")]
+        [InlineData("static Result M(Principal? p) => Result.Ok().WithErrorIfNull(p, \"x\", ErrorKind.NotFound);")]
+        [InlineData("static Result M(Enum kind) => Result.Error(\"x\", kind);")]
+        // Exception errors default to ErrorKind.InternalServerError
+        [InlineData("static Result M(Exception ex) => Result.Error(ex);")]
+        [InlineData("static Result M(Exception ex) => Result.Ok().WithException(ex);")]
+        [InlineData("static Result M() => Result.Ok().Invoke(() => { });")]
+        // Adds an existing error rather than creating one
+        [InlineData("static Result M(IError e) => Result.Ok().WithError(e);")]
+        [InlineData("static Result M(IError e) => Result.Error(e);")]
+        public async Task ErrorWithKind_DoesNotReport(string body)
+        {
+            (await Report(Analyzer, Kinds + "\n" + body, Id)).ShouldBeEmpty();
+        }
+
+        [Fact]
+        public async Task DisabledByDefault()
+        {
+            (await Report(Analyzer, "static Result M() => Result.Error(\"x\");")).ShouldBeEmpty();
+        }
+
+        [Fact]
+        public async Task ErrorEnumMemberWithoutKind_Reports()
+        {
+            var declarations = Kinds + """
+
+                public enum UserErrors
+                {
+                    [Error(Message = "Not found", Kind = AppErrorKind.NotFound)] NotFound,
+                    [Error(Message = "Invalid", Kind = ErrorKind.BadRequest)] Invalid,
+                    [Error(Message = "No kind")] NoKind,
+                    [Error(Message = "Null kind", Kind = null)] NullKind,
+                    Undecorated,
+                }
+                """;
+            (await ReportDeclarations(Analyzer, declarations, Id)).ShouldBe(new[] { Id, Id });
+        }
+
+        [Fact]
+        public async Task ErrorImplementationWithoutKind_Reports()
+        {
+            var declarations = Kinds + """
+
+                public class NoKindError : IError
+                {
+                    public int Code => 0;
+                    public string GroupName => "";
+                    public string MemberName => "";
+                    public string Message => "";
+                    public string UserMessage => "";
+                    public string ToUserString() => Message;
+                }
+                """;
+            (await ReportDeclarations(Analyzer, declarations, Id)).ShouldBe(new[] { Id });
+        }
+
+        [Theory]
+        [InlineData("public Enum? Kind => AppErrorKind.NotFound;")]
+        [InlineData("Enum? IError.Kind => Kind; public AppErrorKind Kind => AppErrorKind.Conflict;")]
+        public async Task ErrorImplementationWithKind_DoesNotReport(string kindMember)
+        {
+            var declarations = Kinds + $$"""
+
+                public class AppError : IError
+                {
+                    {{kindMember}}
+                    public int Code => 0;
+                    public string GroupName => "";
+                    public string MemberName => "";
+                    public string Message => "";
+                    public string UserMessage => "";
+                    public string ToUserString() => Message;
+                }
+
+                // Inherits Error's Kind
+                public class DerivedError : Error
+                {
+                    public DerivedError() : base("x", AppErrorKind.NotFound) { }
+                }
+                """;
+            (await ReportDeclarations(Analyzer, declarations, Id)).ShouldBeEmpty();
         }
     }
 }

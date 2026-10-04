@@ -188,7 +188,15 @@ namespace Clawfoot.ResultPattern
         /// </summary>
         public static Result Error(string message, string userMessage = "")
         {
-            return new Result(new[] { new Error(message, userMessage) }, null, null);
+            return Error(message, (Enum?)null, userMessage);
+        }
+
+        /// <summary>
+        /// Helper method that creates a <see cref="Result"/> with an error message of the given kind
+        /// </summary>
+        public static Result Error(string message, Enum? kind, string userMessage = "")
+        {
+            return new Result(new[] { new Error(message, kind, userMessage) }, null, null);
         }
 
         /// <summary>
@@ -212,7 +220,15 @@ namespace Clawfoot.ResultPattern
         /// </summary>
         public static Result<TResult> Error<TResult>(string message, string userMessage = "")
         {
-            return new Result<TResult>(new[] { new Error(message, userMessage) }, null, null);
+            return Error<TResult>(message, (Enum?)null, userMessage);
+        }
+
+        /// <summary>
+        /// Helper method that creates a <see cref="Result{T}"/> with an error message of the given kind
+        /// </summary>
+        public static Result<TResult> Error<TResult>(string message, Enum? kind, string userMessage = "")
+        {
+            return new Result<TResult>(new[] { new Error(message, kind, userMessage) }, null, null);
         }
 
         /// <summary>
@@ -233,21 +249,39 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
-        /// Helper method that creates a <see cref="Result"/> with the provided exception
+        /// Helper method that creates a <see cref="Result"/> with the provided exception.
+        /// The error's kind is <see cref="ErrorKind.InternalServerError"/>.
         /// </summary>
         public static Result Error(Exception ex)
         {
-            var errors = new[] { (IError)new Error(ex.Message) };
+            return Error(ex, ErrorKind.InternalServerError);
+        }
+
+        /// <summary>
+        /// Helper method that creates a <see cref="Result"/> with the provided exception, recorded as an error of the given kind
+        /// </summary>
+        public static Result Error(Exception ex, Enum? kind)
+        {
+            var errors = new[] { (IError)ResultPattern.Error.FromException(ex, kind) };
             var exceptions = new[] { ex };
             return new Result(errors, exceptions, null);
         }
 
         /// <summary>
-        /// Helper method that creates a <see cref="Result{T}"/> with the provided exception
+        /// Helper method that creates a <see cref="Result{T}"/> with the provided exception.
+        /// The error's kind is <see cref="ErrorKind.InternalServerError"/>.
         /// </summary>
         public static Result<TResult> Error<TResult>(Exception ex)
         {
-            var errors = new[] { (IError)new Error(ex.Message) };
+            return Error<TResult>(ex, ErrorKind.InternalServerError);
+        }
+
+        /// <summary>
+        /// Helper method that creates a <see cref="Result{T}"/> with the provided exception, recorded as an error of the given kind
+        /// </summary>
+        public static Result<TResult> Error<TResult>(Exception ex, Enum? kind)
+        {
+            var errors = new[] { (IError)ResultPattern.Error.FromException(ex, kind) };
             var exceptions = new[] { ex };
             return new Result<TResult>(errors, exceptions, null);
         }

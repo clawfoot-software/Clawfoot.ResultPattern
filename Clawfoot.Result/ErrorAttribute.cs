@@ -22,6 +22,13 @@ namespace Clawfoot.ResultPattern
         public string? MemberName { get; set; }
 
         /// <summary>
+        /// The kind (category) of the error, copied to <see cref="IError.Kind"/> by <see cref="Error.From{TErrorEnum}(TErrorEnum, string[])"/>.
+        /// Must be an enum value, e.g. <c>Kind = ErrorKind.NotFound</c> or one of the application's own kinds. Null leaves the error without a kind.
+        /// </summary>
+        /// <remarks>Typed as <see cref="object"/> because attribute properties can't be typed <see cref="Enum"/>.</remarks>
+        public object? Kind { get; set; }
+
+        /// <summary>
         /// Formats the error message for this error
         /// If there are no values, returns an unformatted message
         /// </summary>

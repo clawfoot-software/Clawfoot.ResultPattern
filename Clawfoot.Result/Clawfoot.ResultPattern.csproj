@@ -32,6 +32,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
     <ProjectReference Include="..\Clawfoot.Result.Analyzers\Clawfoot.Result.Analyzers.csproj">
       <!-- PrivateAssets=all: do not publish a NuGet dependency on the analyzer package; we embed it below. -->
