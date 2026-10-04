@@ -64,9 +64,10 @@ if (result.TryGetValue(out var value)) use(value);
 
 // Tests and startup code: throws InvalidOperationException listing the errors
 User user = CreateUser().GetValueOrThrow();
+SaveSettings().EnsureSuccess();   // plain Result: throws the same way, does nothing on success
 ```
 
-`Assert.True(result.Success)` and `Assert.False(result.HasErrors)` (xUnit) also tell the compiler the value is present. Fluent assertion chains like `result.HasErrors.Should().BeFalse()` don't, so use `GetValueOrThrow()` there.
+`Assert.True(result.Success)` and `Assert.False(result.HasErrors)` (xUnit) also tell the compiler the value is present. Fluent assertion chains like `result.HasErrors.Should().BeFalse()` don't, so use `GetValueOrThrow()` there. On a `Result<T>`, `result.EnsureSuccess();` also tells the compiler `result.Value` is not null.
 
 ## Immutable patterns
 
@@ -137,6 +138,9 @@ IActionResult ToResponse(ResultBase result) => result.GetErrorKind() switch
 
 A kind matches on its enum type as well as its value, so `AppErrorKind.NotFound` never matches `ErrorKind.NotFound`.
 
+Decide by kind (or `Code`), never by message text: `error.Message == "..."`, `Message.Contains("not found")` or
+`switch (error.Message)` change behaviour as soon as someone rewords a message. The analyzer `CFRESULT006` warns about them.
+
 | On a result | Returns |
 |---|---|
 | `GetErrorKind()` | The kind of the first error that has one, or null |
@@ -194,11 +198,14 @@ public enum UserErrors
 Result r = Result.FromError(UserErrors.NotFound);   // r.GetErrorKind() == ErrorKind.NotFound
 ```
 
-`Kind` is copied onto the error; without it, the error has no kind.
+`Kind` is copied onto the error; without it, the error has no kind. It must be an enum value: `Kind = 404` or
+`Kind = "NotFound"` compiles (attribute properties can't be typed `Enum`) but is a build error (`CFRESULT007`).
 
 ## Analyzers
 
-The package includes Roslyn analyzers. They load automatically, with no extra package to install.
+The package includes Roslyn analyzers. They load automatically, with no extra package to install, in every project
+that references the package, directly or through another project or package (e.g. a test project referencing your
+service project).
 
 | ID | Default | Flags |
 |---|---|---|
@@ -207,6 +214,8 @@ The package includes Roslyn analyzers. They load automatically, with no extra pa
 | `CFRESULT003` | **Error** | A known-successful `Result` (`Result.Ok()`, `new Result()`) converted to `Result<T>` (implicitly, by cast, or with `As<T>()`) |
 | `CFRESULT004` | Warning | `Result<X?>`: a nullable type argument can't represent "no value"; use `(Result, X?)` |
 | `CFRESULT005` | Off (opt-in) | An error created without a kind: `new Error(...)`, `Result.Error(message)`, `WithError(message)`, `WithErrorIf*` without a kind, a `null` kind, `[Error]` on an enum member without `Kind`, or an `IError` implementation without a `Kind` property |
+| `CFRESULT006` | Warning | A decision made on error text: `IError.Message`, `UserMessage`, `ToString()`, `ToUserString()` or a result's `ToString()` compared with `==`/`!=`, `Equals`, `Contains`, `StartsWith`, `EndsWith`, `IndexOf`, `Regex.IsMatch`, or matched in a `switch` or `is` pattern. Logging, formatting and displaying the text is fine |
+| `CFRESULT007` | **Error** | `[Error(Kind = ...)]` set to something other than an enum value, e.g. `Kind = 404` (`Error.From` would throw) |
 
 Raise or lower severities in `.editorconfig`:
 
@@ -217,10 +226,13 @@ dotnet_diagnostic.CFRESULT004.severity = error
 dotnet_diagnostic.CFRESULT005.severity = warning   # opt in: require a kind on every error
 ```
 
+Put these settings in an `.editorconfig` that covers every project, usually at the repository root. One under `src/`
+doesn't apply to projects under `tests/`, so the rules keep their defaults there.
+
 ## Features
 
-- **Result** and **Result<T>**: immutable; `Success`, `IsOk`, `HasErrors`, `HasResult`, `Errors`, `Message`, `Value`, `TryGetValue`, `GetValueOrThrow`
-- **Nullable flow**: `HasErrors`/`Success`/`IsOk`/`HasResult`/`TryGetValue` tell the compiler when `Value` is non-null
+- **Result** and **Result<T>**: immutable; `Success`, `IsOk`, `HasErrors`, `HasResult`, `Errors`, `Message`, `Value`, `TryGetValue`, `GetValueOrThrow`, `EnsureSuccess`
+- **Nullable flow**: `HasErrors`/`Success`/`IsOk`/`HasResult`/`TryGetValue`/`EnsureSuccess` tell the compiler when `Value` is non-null
 - **Result.Combine(...)**: combines multiple results (errors combined; for `Result<T>`, last successful value wins)
 - **WithError** / **WithErrors** / **WithException** / **WithValue**: return a new result with added state
 - **Invoke** / **InvokeAsync** / **InvokeResult**: wrap calls and return a new result (chainable)

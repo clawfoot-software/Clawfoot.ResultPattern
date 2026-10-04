@@ -71,6 +71,14 @@ public class CompilerFlowTests
     }
 
     [Fact]
+    public void EnsureSuccess_NoWarning()
+    {
+        Warnings("""
+            static string M() { var r = Lookup.Load(); r.EnsureSuccess(); return r.Value.Name; }
+            """).ShouldBeEmpty();
+    }
+
+    [Fact]
     public void FailedResultPropagation_NoWarning()
     {
         Warnings("""

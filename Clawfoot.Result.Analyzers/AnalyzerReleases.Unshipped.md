@@ -5,4 +5,5 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-CFRESULT005 | Design | Disabled | ErrorWithoutKindAnalyzer
+CFRESULT006 | Design | Warning | ErrorTextDecisionAnalyzer
+CFRESULT007 | Usage | Error | ErrorKindNotEnumAnalyzer
