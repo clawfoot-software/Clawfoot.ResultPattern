@@ -127,20 +127,27 @@ namespace Clawfoot.ResultPattern
         [return: NotNull]
         public T GetValueOrThrow()
         {
-            if (base.HasErrors)
-            {
-                Exception? inner = _exceptions.Count switch
-                {
-                    0 => null,
-                    1 => _exceptions[0],
-                    _ => new AggregateException(_exceptions)
-                };
-                throw new InvalidOperationException(
-                    $"Result<{typeof(T).Name}> has {_errors.Count} error(s): {ToString("; ")}", inner);
-            }
-
+            base.EnsureSuccess();
             return _value!;
         }
+
+        /// <summary>
+        /// Throws if the result has errors; does nothing when it is successful, and the compiler then knows
+        /// <see cref="Value"/> is not null.
+        /// Intended for tests, startup code and paths where a failure is a bug; use <see cref="HasErrors"/> or
+        /// <see cref="TryGetValue"/> on normal code paths.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The result has errors. The message lists them; the inner exception
+        /// is the result's exception (or an <see cref="AggregateException"/> of them) when there are any.</exception>
+#pragma warning disable CS8774 // a successful Result<T> always carries a value (enforced by the constructors)
+        [MemberNotNull(nameof(Value))]
+        public new void EnsureSuccess()
+        {
+            base.EnsureSuccess();
+        }
+#pragma warning restore CS8774
+
+        private protected override string TypeDisplayName => $"Result<{typeof(T).Name}>";
 
         /// <summary>
         /// Returns a new result with the same errors/exceptions/success message but the given value

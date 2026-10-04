@@ -151,6 +151,69 @@ public class NullableFlowTests
     }
 
     [Fact]
+    public void GetValueOrThrow_WhenFailed_NamesTheValueType()
+    {
+        var ex = Should.Throw<InvalidOperationException>(() => Result.Error<int>("first").GetValueOrThrow());
+        ex.Message.ShouldBe("Result<Int32> has 1 error(s): first");
+    }
+
+    [Fact]
+    public void EnsureSuccess_WhenSuccess_DoesNothing()
+    {
+        Should.NotThrow(() => Result.Ok().EnsureSuccess());
+    }
+
+    [Fact]
+    public void EnsureSuccess_WhenFailed_ThrowsWithErrorMessages()
+    {
+        var result = Result.Error("first").WithError("second");
+        var ex = Should.Throw<InvalidOperationException>(() => result.EnsureSuccess());
+        ex.Message.ShouldBe("Result has 2 error(s): first; second");
+        ex.InnerException.ShouldBeNull();
+    }
+
+    [Fact]
+    public void EnsureSuccess_WhenFailedWithException_UsesItAsInner()
+    {
+        var cause = new TimeoutException("db");
+        var ex = Should.Throw<InvalidOperationException>(() => Result.Error(cause).EnsureSuccess());
+        ex.InnerException.ShouldBeSameAs(cause);
+    }
+
+    [Fact]
+    public void EnsureSuccess_WhenFailedWithExceptions_AggregatesThem()
+    {
+        var result = Result.Error(new TimeoutException("a")).WithException(new TimeoutException("b"));
+        var ex = Should.Throw<InvalidOperationException>(() => result.EnsureSuccess());
+        ex.InnerException.ShouldBeOfType<AggregateException>()
+            .InnerExceptions.Select(e => e.Message).ShouldBe(new[] { "a", "b" });
+    }
+
+    [Fact]
+    public void EnsureSuccess_OnResultT_GivesNonNullValue()
+    {
+        var result = Load(true);
+        result.EnsureSuccess();
+        result.Value.Name.ShouldBe("p");
+    }
+
+    [Fact]
+    public void EnsureSuccess_OnFailedResultT_ThrowsLikeGetValueOrThrow()
+    {
+        var result = Load(false);
+        var ex = Should.Throw<InvalidOperationException>(() => result.EnsureSuccess());
+        ex.Message.ShouldBe(Should.Throw<InvalidOperationException>(() => result.GetValueOrThrow()).Message);
+    }
+
+    [Fact]
+    public void EnsureSuccess_OnResultTAsResultBase_NamesTheValueType()
+    {
+        ResultBase result = Result.Error<int>("first");
+        var ex = Should.Throw<InvalidOperationException>(() => result.EnsureSuccess());
+        ex.Message.ShouldBe("Result<Int32> has 1 error(s): first");
+    }
+
+    [Fact]
     public void OkT_WithNull_Throws()
     {
         Should.Throw<ArgumentNullException>(() => Result.Ok<string>(null!));

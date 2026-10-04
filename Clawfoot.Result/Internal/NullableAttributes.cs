@@ -4,6 +4,25 @@
 namespace System.Diagnostics.CodeAnalysis
 {
     /// <summary>
+    /// Specifies that the method or property will ensure that the listed members are not null.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
+    internal sealed class MemberNotNullAttribute : Attribute
+    {
+        public MemberNotNullAttribute(string member)
+        {
+            Members = new[] { member };
+        }
+
+        public MemberNotNullAttribute(params string[] members)
+        {
+            Members = members;
+        }
+
+        public string[] Members { get; }
+    }
+
+    /// <summary>
     /// Specifies that the method or property will ensure that the listed members are not null
     /// when returning with the specified return value condition.
     /// </summary>

@@ -11,7 +11,7 @@ namespace Clawfoot.Result.Analyzers.Tests;
 /// </summary>
 internal static class CompilationHarness
 {
-    private const string Usings = "using System;\nusing System.Threading.Tasks;\nusing Clawfoot.ResultPattern;\n";
+    private const string Usings = "using System;\nusing System.Linq;\nusing System.Threading.Tasks;\nusing Clawfoot.ResultPattern;\n";
 
     private static readonly Lazy<MetadataReference[]> References = new(BuildReferences);
 

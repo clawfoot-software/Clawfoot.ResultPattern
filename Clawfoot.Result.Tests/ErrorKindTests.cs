@@ -14,8 +14,10 @@ public enum UserErrors
     InvalidId,
     [Error(Code = 1003, Message = "No kind")]
     NoKind,
+#pragma warning disable CFRESULT007 // the runtime check for a non-enum kind is what's under test
     [Error(Kind = "not an enum", Message = "Bad kind")]
     NonEnumKind,
+#pragma warning restore CFRESULT007
 }
 
 /// <summary>

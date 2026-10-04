@@ -137,8 +137,7 @@ public class ResultSurfaceTests
         var r2 = Result.Error("E2");
         var combined = Result.Combine(r1, r2);
         ResultTestHarness.AssertFailure(combined, 2);
-        combined.Errors.ShouldContain(e => e.Message == "E1");
-        combined.Errors.ShouldContain(e => e.Message == "E2");
+        combined.Errors.Select(e => e.Message).ShouldBe(new[] { "E1", "E2" });
     }
 
     [Fact]

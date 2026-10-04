@@ -130,6 +130,32 @@ namespace Clawfoot.ResultPattern
         }
 
         /// <summary>
+        /// Throws if the result has errors; does nothing when it is successful.
+        /// Intended for tests, startup code and paths where a failure is a bug; use <see cref="HasErrors"/> on normal
+        /// code paths.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The result has errors. The message lists them; the inner exception
+        /// is the result's exception (or an <see cref="AggregateException"/> of them) when there are any.</exception>
+        public void EnsureSuccess()
+        {
+            if (_errors.Count == 0)
+                return;
+
+            Exception? inner = _exceptions.Count switch
+            {
+                0 => null,
+                1 => _exceptions[0],
+                _ => new AggregateException(_exceptions)
+            };
+            throw new InvalidOperationException($"{TypeDisplayName} has {_errors.Count} error(s): {ToString("; ")}", inner);
+        }
+
+        /// <summary>
+        /// The type name used in exception messages, e.g. "Result" or "Result&lt;Int32&gt;"
+        /// </summary>
+        private protected virtual string TypeDisplayName => nameof(Result);
+
+        /// <summary>
         /// Combines all error messages into a single string
         /// </summary>
         public string ToString(string seperator = "\n")

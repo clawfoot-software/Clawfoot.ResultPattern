@@ -1,6 +1,34 @@
 # Changelog
 
-## 4.1.0 (unreleased)
+## 4.2.0
+
+### Added
+
+- `ResultBase.EnsureSuccess()`: throws `InvalidOperationException` listing the errors when the result has failed, and
+  does nothing on success. Same message and inner-exception rules as `GetValueOrThrow()`, which now uses it. For tests,
+  startup code and "this cannot fail" paths on a plain `Result`. On a `Result<T>` it also tells the compiler `Value` is
+  not null.
+- Analyzer `CFRESULT006` (warning, **on by default**): a decision made on error text. Reports `IError.Message`,
+  `UserMessage`, `ToString()`, `ToUserString()`, or a result's `ToString()` / `ToUserFriendlyString()`, used as an
+  operand of `==`/`!=`, `Equals`, `Contains`, `StartsWith`, `EndsWith`, `IndexOf`, `Regex.IsMatch`, or matched in a
+  `switch` or `is` pattern. This includes text passed through `Trim`/`ToLower`/`ToUpper`, `??`, `?.` or a local.
+  Logging, formatting and displaying the text, and null checks, are not reported. Decide by `Kind` (or `Code`) instead.
+- Analyzer `CFRESULT007` (error): `[Error(Kind = ...)]` set to a value that isn't an enum, e.g. `Kind = 404` or
+  `Kind = "NotFound"`. It compiled before and threw `InvalidOperationException` from `Error.From` at runtime.
+
+### Changed
+
+- Upgrading can produce new `CFRESULT006` warnings (and `CFRESULT007` errors) in existing code, including tests that
+  assert on message text with `==` or `Contains`. Assert on the text with a read instead
+  (`errors.Select(e => e.Message).ShouldBe(...)`), or lower the rule in `.editorconfig`
+  (`dotnet_diagnostic.CFRESULT006.severity = suggestion`).
+
+### Notes
+
+- The analyzers run in projects that get the package transitively (e.g. a test project referencing a service project,
+  or a package that depends on this one). Verified on the .NET 8 and .NET 10 SDKs; no packaging change was needed.
+
+## 4.1.0
 
 Errors can carry a **kind**: an enum value for handling errors centrally, e.g. in one `switch`. Any enum works, so
 applications can define their own kinds; a built-in `ErrorKind` covers the HTTP 4xx/5xx status codes.

@@ -18,3 +18,11 @@ Rule ID | Category | Severity | Notes
 CFRESULT002 | Usage | Warning | ResultValueNullForgivingAnalyzer
 CFRESULT003 | Usage | Error | SuccessfulResultToGenericAnalyzer
 CFRESULT004 | Design | Warning | NullableResultTypeArgumentAnalyzer
+
+## Release 4.1.0
+
+### New Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-------
+CFRESULT005 | Design | Disabled | ErrorWithoutKindAnalyzer
